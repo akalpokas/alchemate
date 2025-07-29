@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alchemate"
+version = "0.0.1"
+authors = [
+  { name="Audrius Kalpokas", email= "akalpokas16@gmail.com" },
+]
+description = "Modular SOMD2 post-processing workflows"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+]
+
+[project.urls]
+Homepage = "https://https://github.com/akalpokas/alchemate"
+Issues = "https://https://github.com/akalpokas/alchemate/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
