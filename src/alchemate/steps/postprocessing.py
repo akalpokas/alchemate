@@ -18,3 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
+
+from .base import WorkflowStep
+from ..context import SimulationContext
+
+class CalculateRMSD(WorkflowStep):
+    """A step to analyze the simulation trajectory."""
+    def run(self, context: SimulationContext):
+        print("\n--- Running Step: CalculateRMSD ---")
+        if not context.md_results:
+            raise ValueError("MD results not found! Did the main calculation run?")
+
+        print(f"Analysis complete.")

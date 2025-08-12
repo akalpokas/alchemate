@@ -18,3 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
+
+from .base import WorkflowStep
+from ..context import SimulationContext
+
+class PrepareSystem(WorkflowStep):
+    """A step to set up simulation parameters."""
+    def run(self, context: SimulationContext):
+        print("\n--- Running Step: PrepareSystem ---")
+        print(f"Reading from {context.input_file} to determine parameters.")
+        # This step's logic would go here. For now, we'll just add some params.
+        context.preprocess_parameters["temperature"] = 300  # in Kelvin
+        context.preprocess_parameters["box_size"] = (10, 10, 10) # in Angstroms
+        print("System parameters prepared and added to context.")

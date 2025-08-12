@@ -1,5 +1,5 @@
 # alchemate
-Modular SOMD2 post-processing workflows
+Modular SOMD2 processing workflows
 
 ___
 # Installation

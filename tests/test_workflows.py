@@ -18,3 +18,5 @@
 # You should have received a copy of the GNU General Public License
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
+
+# unit and integration tests go here
