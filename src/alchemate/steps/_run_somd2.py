@@ -19,15 +19,16 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
-from loguru import logger
+from alchemate.context import SimulationContext
+import somd2
 
-# A simple data bucket for passing along information through workflows.
-class SimulationContext:
-    def __init__(self, system, somd2_config):
-        self.system = system
-        self.somd2_config = somd2_config
-        self.preprocess_parameters = {}
-        self.postprocess_parameters = {}
-        self.analysis_output = None
-        self.result = None
-        print(f"SimulationContext initialized with system: {system} and SOMD2 config: {somd2_config}")
+
+def _run_somd2_workflow(context: SimulationContext):
+    "Wrapper function to run the SOMD2 workflow."
+    runner = somd2.runner.RepexRunner(config=context.somd2_config,
+                                      system=context.system)
+    print(runner)
+    try:
+        runner.run()
+    except Exception as e:
+        print(f"Error occurred while running SOMD2 workflow: {e}")

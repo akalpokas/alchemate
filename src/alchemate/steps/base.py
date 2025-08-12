@@ -30,10 +30,10 @@ class WorkflowStep(ABC):
         pass
 
 # THE MAIN CALCULATION STEP (A WRAPPER)
-class RunMainCalculation(WorkflowStep):
+class RunMockCalculation(WorkflowStep):
     """A step to run the external MD engine."""
     def run(self, context: SimulationContext):
-        print("\n--- Running Step: RunMainCalculation ---")
+        print("\n--- Running Step: RunMockCalculation ---")
         if not context.preprocess_parameters:
             raise ValueError("Parameters not found in context! Did PrepareSystem run?")
         
@@ -46,5 +46,5 @@ class RunMainCalculation(WorkflowStep):
         results = "Testing"
         
         # 3. Store results back into the context
-        context.md_results = results
+        context.result = results
         print("MD results stored in context.")

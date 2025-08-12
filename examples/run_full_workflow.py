@@ -2,24 +2,19 @@ import somd2
 from alchemate.manager import WorkflowManager
 
 # Import the modular workflows you need for the calculation
-from alchemate.steps.preprocessing import PrepareSystem
-from alchemate.steps.base import RunMockCalculation
-from alchemate.steps.postprocessing import CalculateRMSD
+from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 
-# Supress userwarnings
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
 
 # Define SOMD2 configuration for setting up the physical simultion (PME, cutoff, timestep, etc.)
 somd2_config = somd2.config.Config()
+
+somd2_config.replica_exchange = True
 
 if __name__ == "__main__":
 
     # Define the desired workflow
     simulation_workflow = [
-        PrepareSystem(),
-        RunMockCalculation(),
-        CalculateRMSD(),
+        OptimizeExchangeProbabilities(),
     ]
     
     # Create the manager with this workflow

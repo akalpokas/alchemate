@@ -26,7 +26,7 @@ class CalculateRMSD(WorkflowStep):
     """A step to analyze the simulation trajectory."""
     def run(self, context: SimulationContext):
         print("\n--- Running Step: CalculateRMSD ---")
-        if not context.md_results:
+        if not context.result:
             raise ValueError("MD results not found! Did the main calculation run?")
 
         print(f"Analysis complete.")

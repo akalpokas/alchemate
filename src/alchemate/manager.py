@@ -45,10 +45,10 @@ class WorkflowManager:
     def __init__(self, workflow_steps: list[WorkflowStep]):
         self.workflow_steps = workflow_steps
         
-    def execute(self, input_file: str, somd2_config):
+    def execute(self, system: str, somd2_config):
         _display_masthead(package_name="alchemate") 
 
-        context = SimulationContext(input_file=input_file, somd2_config=somd2_config)
+        context = SimulationContext(system=system, somd2_config=somd2_config)
 
         for step in self.workflow_steps:
             try:
