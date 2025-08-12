@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "alchemate"
-version = "0.0.1"
+dynamic = ["version"]
 authors = [
   { name="Audrius Kalpokas", email= "akalpokas16@gmail.com" },
 ]
@@ -22,3 +22,5 @@ Issues = "https://https://github.com/akalpokas/alchemate/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
