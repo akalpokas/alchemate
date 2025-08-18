@@ -45,7 +45,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
     def __init__(self) -> None:
         super().__init__()
         self.optimization_attempts: int = 3
-        self.optimization_threshold: float = 0.1
+        self.optimization_threshold: float = 0.15
         #self.max_lambda_insertion: int = 5
         self.vacuum_optimization = True
 
@@ -66,7 +66,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             if i < len(repex_matrix) - 1:
                 exchange_prob = row[i+1]
                 print(f"Exchange probability between replica {i} and {i+1}: {exchange_prob}")
-                if exchange_prob < 0.15:
+                if exchange_prob < self.optimization_threshold:
                     require_optimization.append((i, i+1))
                     print(f"Warning: Low exchange probability detected ({exchange_prob})")
 
@@ -78,7 +78,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         new_lambdas = []
         for i, j in require_optimization:
             new_lambda = (lambda_values[i] + lambda_values[j]) / 2
-            new_lambdas.append(new_lambda)
+            new_lambdas.append(round(new_lambda, 3))
 
         # insert new lambdas into the original array
         for new_lambda in new_lambdas:
