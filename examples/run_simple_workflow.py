@@ -8,6 +8,7 @@ from alchemate.steps.postprocessing import CalculateRMSD
 
 # Supress userwarnings
 import warnings
+
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # Define SOMD2 configuration for setting up the physical simultion (PME, cutoff, timestep, etc.)
@@ -21,12 +22,14 @@ if __name__ == "__main__":
         RunMockCalculation(),
         CalculateRMSD(),
     ]
-    
+
     # Create the manager with this workflow
     manager = WorkflowManager(workflow_steps=simulation_workflow)
-    
+
     # Run everything
-    final_context = manager.execute(system="merged_molecule.s3", somd2_config=somd2_config)
+    final_context = manager.execute(
+        system="merged_molecule.s3", somd2_config=somd2_config
+    )
 
     # Access the final context for all of the results.
     if final_context:

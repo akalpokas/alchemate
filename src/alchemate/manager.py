@@ -23,6 +23,7 @@ import importlib.metadata
 from .context import SimulationContext
 from .steps.base import WorkflowStep
 
+
 # A helper function to create and display the masthead
 def _display_masthead(package_name: str):
     """Fetches the package version and displays a startup masthead."""
@@ -31,7 +32,7 @@ def _display_masthead(package_name: str):
         version = importlib.metadata.version(package_name)
     except importlib.metadata.PackageNotFoundError:
         version = "unknown"
-    
+
     masthead = f"""
 +--------------------------------------------------+
 |   alchemate:                                     |
@@ -41,12 +42,13 @@ def _display_masthead(package_name: str):
 """
     print(masthead)
 
+
 class WorkflowManager:
     def __init__(self, workflow_steps: list[WorkflowStep]):
         self.workflow_steps = workflow_steps
-        
+
     def execute(self, system: str, somd2_config):
-        _display_masthead(package_name="alchemate") 
+        _display_masthead(package_name="alchemate")
 
         context = SimulationContext(system=system, somd2_config=somd2_config)
 
@@ -56,7 +58,7 @@ class WorkflowManager:
             except Exception as e:
                 print(f"ERROR in step {step.__class__.__name__}: {e}")
                 print("Workflow halted.")
-                return None # Or handle the error more gracefully
+                return None  # Or handle the error more gracefully
 
         print("\nWorkflow finished successfully!")
         return context

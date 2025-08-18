@@ -22,6 +22,7 @@
 from abc import ABC, abstractmethod
 from ..context import SimulationContext
 
+
 # Template class for all processing steps.
 class WorkflowStep(ABC):
     @abstractmethod
@@ -29,14 +30,16 @@ class WorkflowStep(ABC):
         """Runs the workflow step."""
         pass
 
+
 # THE MAIN CALCULATION STEP (A WRAPPER)
 class RunMockCalculation(WorkflowStep):
     """A step to run the external MD engine."""
+
     def run(self, context: SimulationContext):
         print("\n--- Running Step: RunMockCalculation ---")
         if not context.preprocess_parameters:
             raise ValueError("Parameters not found in context! Did PrepareSystem run?")
-        
+
         # 1. Get params from context
         engine_params = context.preprocess_parameters
 
@@ -44,7 +47,7 @@ class RunMockCalculation(WorkflowStep):
         # md_engine = SomeMDEngine(params=engine_params)
         # results = md_engine.run_simulation()
         results = "Testing"
-        
+
         # 3. Store results back into the context
         context.result = results
         print("MD results stored in context.")

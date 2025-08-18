@@ -12,36 +12,45 @@ def dummy_context():
     context.somd2_config.num_lambda = 4
     return context
 
+
 @pytest.fixture
 def repex_matrix_low_prob(tmp_path):
     # 4x4 matrix, low exchange probability (< 0.15) between 0-1 and 2-3
-    matrix = np.array([
-        [1.00, 0.00, 0.00, 0.00],
-        [0.00, 0.75, 0.25, 0.00],
-        [0.00, 0.25, 0.65, 0.10],
-        [0.00, 0.00, 0.10, 0.90]
-    ])
+    matrix = np.array(
+        [
+            [1.00, 0.00, 0.00, 0.00],
+            [0.00, 0.75, 0.25, 0.00],
+            [0.00, 0.25, 0.65, 0.10],
+            [0.00, 0.00, 0.10, 0.90],
+        ]
+    )
     return matrix
+
 
 @pytest.fixture
 def repex_matrix_high_prob(tmp_path):
     # 4x4 matrix, high exchange probability
-    matrix = np.array([
-        [0.75, 0.25, 0.00, 0.00],
-        [0.25, 0.50, 0.25, 0.00],
-        [0.00, 0.25, 0.50, 0.25],
-        [0.00, 0.00, 0.25, 0.75]
-    ])
+    matrix = np.array(
+        [
+            [0.75, 0.25, 0.00, 0.00],
+            [0.25, 0.50, 0.25, 0.00],
+            [0.00, 0.25, 0.50, 0.25],
+            [0.00, 0.00, 0.25, 0.75],
+        ]
+    )
     return matrix
 
-def test_optimize_exchange_matrix_inserts_new_lambdas(tmp_path, dummy_context, repex_matrix_low_prob):
+
+def test_optimize_exchange_matrix_inserts_new_lambdas(
+    tmp_path, dummy_context, repex_matrix_low_prob
+):
     dummy_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_low_prob)
     optimizer = OptimizeExchangeProbabilities()
 
     # Should insert new lambdas between pairs with <0.15 exchange prob
     result = optimizer._optimize_exchange_matrix(dummy_context)
-    
+
     # Should add lambdas between 0-1, 2-3, so we should have 6 in total
     assert len(result) == 6
 
@@ -50,7 +59,9 @@ def test_optimize_exchange_matrix_inserts_new_lambdas(tmp_path, dummy_context, r
     assert result == pytest.approx(answer, abs=0.01)
 
 
-def test_optimize_exchange_matrix_no_new_lambdas(tmp_path, dummy_context, repex_matrix_high_prob):
+def test_optimize_exchange_matrix_no_new_lambdas(
+    tmp_path, dummy_context, repex_matrix_high_prob
+):
     dummy_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_high_prob)
     optimizer = OptimizeExchangeProbabilities()

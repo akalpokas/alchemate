@@ -22,8 +22,10 @@
 from .base import WorkflowStep
 from ..context import SimulationContext
 
+
 class CalculateRMSD(WorkflowStep):
     """A step to analyze the simulation trajectory."""
+
     def run(self, context: SimulationContext):
         print("\n--- Running Step: CalculateRMSD ---")
         if not context.result:

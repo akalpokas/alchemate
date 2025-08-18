@@ -25,8 +25,9 @@ import somd2
 
 def _run_somd2_workflow(context: SimulationContext):
     "Wrapper function to run the SOMD2 workflow."
-    runner = somd2.runner.RepexRunner(config=context.somd2_config,
-                                      system=context.system)
+    runner = somd2.runner.RepexRunner(
+        config=context.somd2_config, system=context.system
+    )
     print(runner)
     try:
         runner.run()

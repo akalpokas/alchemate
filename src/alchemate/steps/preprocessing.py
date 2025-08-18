@@ -17,24 +17,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
-#####################################################################
+#####################################################################import numpy as np
+
+import numpy as np
 
 from .base import WorkflowStep
 from ..context import SimulationContext
 from ._run_somd2 import _run_somd2_workflow
-from copy import deepcopy
-import numpy as np
+
 
 class PrepareSystem(WorkflowStep):
     """A step to set up simulation parameters."""
+
     def run(self, context: SimulationContext):
         print("\n--- Running Step: PrepareSystem ---")
         print(f"Reading from {context.preprocess_parameters} to determine parameters.")
-        
+
         # This step's logic would go here. For now, we'll just add some params.
         context.preprocess_parameters["temperature"] = 300  # in Kelvin
-        context.preprocess_parameters["box_size"] = (10, 10, 10) # in Angstroms
+        context.preprocess_parameters["box_size"] = (10, 10, 10)  # in Angstroms
         print("System parameters prepared and added to context.")
+
 
 class OptimizeExchangeProbabilities(WorkflowStep):
     """A step to optimize exchange probabilities.
@@ -42,10 +45,14 @@ class OptimizeExchangeProbabilities(WorkflowStep):
     Replica exchange matrix is then read along with the lambda schedule in order
     to determine where the optimization should occur.
     """
-    def __init__(self, optimization_attempts: int = 3,
-                 optimization_threshold: float = 0.15,
-                 optimization_runtime: str = "500ps",
-                 vacuum_optimization: bool = True) -> None:
+
+    def __init__(
+        self,
+        optimization_attempts: int = 3,
+        optimization_threshold: float = 0.15,
+        optimization_runtime: str = "500ps",
+        vacuum_optimization: bool = True,
+    ) -> None:
         super().__init__()
         self.optimization_attempts: int = optimization_attempts
         self.optimization_threshold: float = optimization_threshold
@@ -68,11 +75,15 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         require_optimization = []
         for i, row in enumerate(repex_matrix):
             if i < len(repex_matrix) - 1:
-                exchange_prob = row[i+1]
-                print(f"Exchange probability between replica {i} and {i+1}: {exchange_prob}")
+                exchange_prob = row[i + 1]
+                print(
+                    f"Exchange probability between replica {i} and {i+1}: {exchange_prob}"
+                )
                 if exchange_prob < self.optimization_threshold:
-                    require_optimization.append((i, i+1))
-                    print(f"Warning: Low exchange probability detected ({exchange_prob})")
+                    require_optimization.append((i, i + 1))
+                    print(
+                        f"Warning: Low exchange probability detected ({exchange_prob})"
+                    )
 
         print("Replicas requiring optimization:")
         for replica_pair in require_optimization:
@@ -100,12 +111,12 @@ class OptimizeExchangeProbabilities(WorkflowStep):
 
         if self.vacuum_optimization:
             import sire as sr
+
             sire_system = sr.stream.load(context.system)
             perturbable_mols = sire_system.molecules("property is_perturbable")
             system = sr.system.System()
             system.add(perturbable_mols)
             context.system = system
-        
 
         # overwrite SOMD2 config
         context.somd2_config.runtime = self.optimization_runtime
@@ -114,7 +125,9 @@ class OptimizeExchangeProbabilities(WorkflowStep):
 
         for i in range(self.optimization_attempts):
             if context.somd2_config.lambda_values is None:
-                old_lambda_values = np.linspace(0, 1, context.somd2_config.num_lambda).tolist()
+                old_lambda_values = np.linspace(
+                    0, 1, context.somd2_config.num_lambda
+                ).tolist()
             else:
                 old_lambda_values = context.somd2_config.lambda_values
 
