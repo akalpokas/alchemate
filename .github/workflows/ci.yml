@@ -30,16 +30,19 @@ jobs:
 
     defaults:
       run:
-        shell: ${{ matrix.platform.shell }}
+        shell: bash -l {0}
     steps:
 # Checkout the alchemate and somd2 repositories
       - name: Checkout the alchemate repository (commit)
         uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/alchemate
         if: github.event_name != 'pull_request'
 #
       - name: Checkout the alchemate repository (PR)
         uses: actions/checkout@v4
         with:
+          path: ${{ github.workspace }}/alchemate
           ref: ${{ github.event.pull_request.head.sha }}
         if: github.event_name == 'pull_request'
 #
@@ -60,7 +63,7 @@ jobs:
 #
       - name: Install alchemate
         run: |
-          cd alchemate
+          cd ${{ github.workspace }}/alchemate
           pip install .
 #
       - name: Install pytest
