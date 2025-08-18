@@ -61,6 +61,11 @@ jobs:
           miniforge-version: latest
           run-post: ${{ matrix.platform.name != 'windows' }}
 #
+      - name: Install somd2
+        run: |
+          cd ${{ github.workspace }}/somd2
+          pip install .
+#
       - name: Install alchemate
         run: |
           cd ${{ github.workspace }}/alchemate
