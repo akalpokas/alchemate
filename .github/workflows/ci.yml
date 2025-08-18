@@ -52,8 +52,9 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          path: ${{ github.workspace }}/somd2
           activate-environment: somd2
-          environment-file: somd2/environment.yaml
+          environment-file:  ${{ github.workspace }}/somd2/environment.yaml
           miniforge-version: latest
           cache-environment: true
           run-post: ${{ matrix.platform.name != 'windows' }}
