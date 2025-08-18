@@ -69,8 +69,7 @@ jobs:
       - name: Install pytest
         run: conda install pytest
 #
-      - name: Install the package
-        run: pip install .
-#
       - name: Run the tests
-        run: python -m pytest -svvv --color=yes tests
+        run: |
+          cd ${{ github.workspace }}/alchemate
+          python -m pytest -svvv --color=yes tests
