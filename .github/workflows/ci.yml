@@ -27,7 +27,6 @@ jobs:
         platform:
 
           - { name: "linux", os: "ubuntu-latest", shell: "bash -l {0}" }
-
     defaults:
       run:
         shell: bash -l {0}

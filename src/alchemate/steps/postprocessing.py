@@ -31,4 +31,4 @@ class CalculateRMSD(WorkflowStep):
         if not context.result:
             raise ValueError("MD results not found! Did the main calculation run?")
 
-        print(f"Analysis complete.")
+        print("Analysis complete.")

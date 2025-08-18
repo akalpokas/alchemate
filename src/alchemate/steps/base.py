@@ -25,10 +25,11 @@ from ..context import SimulationContext
 
 # Template class for all processing steps.
 class WorkflowStep(ABC):
+    """Base class for all workflow steps."""
+
     @abstractmethod
     def run(self, context: SimulationContext):
         """Runs the workflow step."""
-        pass
 
 
 # THE MAIN CALCULATION STEP (A WRAPPER)
@@ -41,7 +42,7 @@ class RunMockCalculation(WorkflowStep):
             raise ValueError("Parameters not found in context! Did PrepareSystem run?")
 
         # 1. Get params from context
-        engine_params = context.preprocess_parameters
+        # engine_params = context.preprocess_parameters
 
         # 2. Call the external API
         # md_engine = SomeMDEngine(params=engine_params)

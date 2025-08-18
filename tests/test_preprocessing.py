@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-from pathlib import Path
 from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 from alchemate.context import SimulationContext
 from somd2.config import Config as somd2_config

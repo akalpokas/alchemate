@@ -17,9 +17,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
-#####################################################################import numpy as np
+#####################################################################
 
 import numpy as np
+import sire as sr
 
 from .base import WorkflowStep
 from ..context import SimulationContext
@@ -104,14 +105,11 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         return lambda_values
 
     def run(self, context: SimulationContext):
-
         print("\n--- Running Step: OptimizeExchangeProbabilities ---")
         print(f"Using parameters from {context.preprocess_parameters}.")
         print("System parameters prepared and added to context.")
 
         if self.vacuum_optimization:
-            import sire as sr
-
             sire_system = sr.stream.load(context.system)
             perturbable_mols = sire_system.molecules("property is_perturbable")
             system = sr.system.System()
@@ -123,7 +121,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         context.somd2_config.overwrite = True
         _run_somd2_workflow(context=context)
 
-        for i in range(self.optimization_attempts):
+        for _ in range(self.optimization_attempts):
             if context.somd2_config.lambda_values is None:
                 old_lambda_values = np.linspace(
                     0, 1, context.somd2_config.num_lambda

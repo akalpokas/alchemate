@@ -16,6 +16,12 @@ dependencies = [
   "loguru",
 ]
 
+optional-dependencies.dev = [
+  "pytest",
+  "ruff",
+  "pre-commit"
+]
+
 [project.urls]
 Homepage = "https://https://github.com/akalpokas/alchemate"
 Issues = "https://https://github.com/akalpokas/alchemate/issues"

@@ -16,7 +16,7 @@ from alchemate.manager import WorkflowManager
 # Import the modular workflows you need for the calculation
 from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 
-# Define SOMD2 configuration for setting up the physical simultion 
+# Define SOMD2 configuration for setting up the physical simultion
 somd2_config = somd2_config()
 somd2_config.cutoff_type = "PME"
 somd2_config.cutoff = "14A"
@@ -50,4 +50,19 @@ ___
 To install alchemate, please first install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment. Then you can install the package into your environment by cloning this repository, and running:
 ```bash
 pip install -e .
+```
+
+Developer dependencies can be installed with:
+```bash
+pip install -e '.[dev]'
+```
+
+and activating commit hooks:
+```bash
+pre-commit install
+```
+
+Testing is done in [tests](tests) using:
+```bash
+python -m pytest -svvv --color=yes tests
 ```
