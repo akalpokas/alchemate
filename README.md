@@ -1,5 +1,7 @@
 [![Build and test](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml/badge.svg?event=workflow_dispatch)](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml)
 
+![alchemate logo](./images/alchemate_logo.png)
+
 # alchemate
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
@@ -47,10 +49,13 @@ Head to [examples](examples/) for more detailed scripts.
 ___
 # Installation
 
+## General use
 To install alchemate, please first install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment. Then you can install the package into your environment by cloning this repository, and running:
 ```bash
 pip install -e .
 ```
+
+## Developing and contributing
 
 Developer dependencies can be installed with:
 ```bash
