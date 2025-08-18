@@ -1,3 +1,5 @@
+[![Build and test](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml/badge.svg?event=workflow_dispatch)](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml)
+
 # alchemate
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
@@ -22,7 +24,7 @@ somd2_config.replica_exchange = True
 
 # Define the desired workflow
 simulation_workflow = [
-    OptimizeExchangeProbabilities(),
+    OptimizeExchangeProbabilities(optimization_attempts=3),
 ]
 
 # Create the manager with this workflow
@@ -31,6 +33,15 @@ manager = WorkflowManager(workflow_steps=simulation_workflow)
 # Run everything
 context = manager.execute(system="merged_molecule.s3", somd2_config=somd2_config)
 ```
+
+At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated. This for example can be used to attempt and pre-optimize λ-schedule of a transformation in vacuum before passing the context to the main simulation:
+
+ADD CODE EXAMPLE
+
+Or a further post-processing workflow can be plugged in to test for simulation convergence:
+
+ADD CODE EXAMPLE - show customization
+
 
 Head to [examples](examples/) for more detailed scripts.
 ___
