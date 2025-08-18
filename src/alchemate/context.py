@@ -19,15 +19,19 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
-from loguru import logger
+from somd2.config import Config as _somd2_config
 
 # A simple data bucket for passing along information through workflows.
 class SimulationContext:
     def __init__(self, system, somd2_config):
         self.system = system
+
+        # Check type of somd2_config
+        if not isinstance(somd2_config, type(_somd2_config())):
+            raise TypeError(f"Expected somd2_config to be an instance of {_somd2_config}, got {type(somd2_config)}")
+
         self.somd2_config = somd2_config
         self.preprocess_parameters = {}
         self.postprocess_parameters = {}
         self.analysis_output = None
         self.result = None
-        print(f"SimulationContext initialized with system: {system} and SOMD2 config: {somd2_config}")

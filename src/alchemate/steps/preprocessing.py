@@ -42,14 +42,18 @@ class OptimizeExchangeProbabilities(WorkflowStep):
     Replica exchange matrix is then read along with the lambda schedule in order
     to determine where the optimization should occur.
     """
-    def __init__(self) -> None:
+    def __init__(self, optimization_attempts: int = 3,
+                 optimization_threshold: float = 0.15,
+                 optimization_runtime: str = "500ps",
+                 vacuum_optimization: bool = True) -> None:
         super().__init__()
-        self.optimization_attempts: int = 3
-        self.optimization_threshold: float = 0.15
-        #self.max_lambda_insertion: int = 5
-        self.vacuum_optimization = True
+        self.optimization_attempts: int = optimization_attempts
+        self.optimization_threshold: float = optimization_threshold
+        self.optimization_runtime: str = optimization_runtime
+        self.vacuum_optimization = vacuum_optimization
 
     def _optimize_exchange_matrix(self, context: SimulationContext):
+        """Internal function to optimize the exchange matrix."""
         try:
             repex_matrix = context.somd2_config.output_directory / "repex_matrix.txt"
             repex_matrix = np.loadtxt(repex_matrix)
@@ -104,7 +108,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         
 
         # overwrite SOMD2 config
-        context.somd2_config.runtime = "250ps"
+        context.somd2_config.runtime = self.optimization_runtime
         context.somd2_config.overwrite = True
         _run_somd2_workflow(context=context)
 
@@ -121,14 +125,3 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             else:
                 context.somd2_config.lambda_values = optimized_lambda_values
                 _run_somd2_workflow(context=context)
-
-
-        # for i in range(self.optimization_attempts):
-        #     print(f"Optimization attempt {i+1}/{self.optimization_attempts}...")
-        #     # Here we would run the optimization logic
-        #     # For now, let's just simulate a successful optimization
-        #     if i < self.optimization_attempts - 1:
-        #         print("Optimization not yet successful, retrying...")
-        #     else:
-        #         print("Optimization successful!")
-        #         break
