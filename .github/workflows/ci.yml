@@ -47,16 +47,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'OpenBioSim/somd2'
+          path: ${{ github.workspace }}/somd2
 # Setup conda and install somd2
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          path: ${{ github.workspace }}/somd2
           activate-environment: somd2
           environment-file:  ${{ github.workspace }}/somd2/environment.yaml
           miniforge-version: latest
-          cache-environment: true
           run-post: ${{ matrix.platform.name != 'windows' }}
 #
       - name: Install alchemate
