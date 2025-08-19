@@ -4,7 +4,7 @@
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
 # Purpose
-Alchemate implements and abstracts high-level functionality to SOMD2 FEP engine, such as iterative λ-schedule optimization or simulation convergence detection for example. The framework is designed to be modular and extensible which allows for arbitrary workflows to be written and plugged in easily.
+Alchemate implements and abstracts high-level functionality to SOMD2 FEP engine, such as iterative λ-schedule optimization or convergence detection for example. The framework is designed to be modular and extensible which allows for arbitrary workflows to be written and plugged in easily.
 
 # Usage
 Using alchemate involves creating a SOMD2 configuration object, defining a simulation workflow, and creating a manager which will run the specified workflows sequentially:
@@ -15,6 +15,7 @@ from alchemate.manager import WorkflowManager
 
 # Import the modular workflows you need for the calculation
 from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
+from alchemate.steps.base import RunBasicCalculation
 
 # Define SOMD2 configuration for setting up the physical simultion
 somd2_config = somd2_config()
@@ -25,6 +26,7 @@ somd2_config.replica_exchange = True
 # Define the desired workflow
 simulation_workflow = [
     OptimizeExchangeProbabilities(optimization_attempts=3),
+    RunBasicCalculation
 ]
 
 # Create the manager with this workflow
@@ -48,7 +50,7 @@ ___
 # Installation
 
 ## General use
-To install alchemate, please first install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment. Then you can install the package into your environment by cloning this repository, and running:
+To install alchemate, please install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment first. Then you can install alchemate into your environment by cloning this repository, and running:
 ```bash
 pip install -e .
 ```
@@ -65,7 +67,7 @@ and activating commit hooks:
 pre-commit install
 ```
 
-Testing is done in [tests](tests) using:
+Testing is done using:
 ```bash
 python -m pytest -svvv --color=yes tests
 ```

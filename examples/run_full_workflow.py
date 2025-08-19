@@ -2,7 +2,7 @@ from somd2.config import Config as somd2_config
 from alchemate.manager import WorkflowManager
 
 # Import the modular workflows you need for the calculation
-from alchemate.steps.base import RunCalculation
+from alchemate.steps.base import RunBasicCalculation
 from alchemate.steps.postprocessing import OptimizeConvergence
 
 # Define SOMD2 configuration for setting up the physical simultion (PME, cutoff, timestep, etc.)
@@ -15,7 +15,7 @@ somd2_config.replica_exchange = True
 if __name__ == "__main__":
     # Define the desired workflow
     simulation_workflow = [
-        RunCalculation(),
+        RunBasicCalculation(),
         OptimizeConvergence(),
     ]
 

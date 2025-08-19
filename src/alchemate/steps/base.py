@@ -34,7 +34,7 @@ class WorkflowStep(ABC):
 
 
 # THE MAIN CALCULATION STEP (A WRAPPER)
-class RunCalculation(WorkflowStep):
+class RunBasicCalculation(WorkflowStep):
     """A step to run the external MD engine."""
 
     def run(self, context: SimulationContext):
