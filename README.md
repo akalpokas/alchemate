@@ -26,7 +26,7 @@ somd2_config.replica_exchange = True
 # Define the desired workflow
 simulation_workflow = [
     OptimizeExchangeProbabilities(optimization_attempts=3),
-    RunBasicCalculation
+    RunBasicCalculation()
 ]
 
 # Create the manager with this workflow
