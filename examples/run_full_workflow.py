@@ -1,27 +1,31 @@
-import somd2
+from somd2.config import Config as somd2_config
 from alchemate.manager import WorkflowManager
 
 # Import the modular workflows you need for the calculation
-from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
-
+from alchemate.steps.base import RunCalculation
+from alchemate.steps.postprocessing import OptimizeConvergence
 
 # Define SOMD2 configuration for setting up the physical simultion (PME, cutoff, timestep, etc.)
-somd2_config = somd2.config.Config()
-
+somd2_config = somd2_config()
+somd2_config.cutoff_type = "RF"
+somd2_config.cutoff = "12A"
+somd2_config.runtime = "100ps"
 somd2_config.replica_exchange = True
 
 if __name__ == "__main__":
-
     # Define the desired workflow
     simulation_workflow = [
-        OptimizeExchangeProbabilities(),
+        RunCalculation(),
+        OptimizeConvergence(),
     ]
-    
+
     # Create the manager with this workflow
     manager = WorkflowManager(workflow_steps=simulation_workflow)
-    
+
     # Run everything
-    final_context = manager.execute(system="merged_molecule.s3", somd2_config=somd2_config)
+    final_context = manager.execute(
+        system="merged_molecule.s3", somd2_config=somd2_config
+    )
 
     # Access the final context for all of the results.
     if final_context:
