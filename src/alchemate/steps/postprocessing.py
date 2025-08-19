@@ -79,22 +79,28 @@ class OptimizeConvergence(WorkflowStep):
         convergence_df = forward_backward_convergence(
             extracted_df_list, estimator="MBAR"
         )
-        df = convergence_df[
-            (convergence_df["data_fraction"] >= 0.5)
-            & (convergence_df["data_fraction"] <= 1)
-        ]
+        converged = self._test_convergence(convergence_df)
+        return converged
 
-        return df["Forward"].std()
+    def _test_convergence(self, df):
+        df = df[(df["data_fraction"] >= 0.5) & (df["data_fraction"] <= 1)]
+
+        free_energy_std = df["Forward"].std()
+        print(f"Free energy standard deviation: {free_energy_std:.4f} kT/mol")
+
+        if free_energy_std < self.optimization_threshold:
+            return True
+        else:
+            return False
 
     def run(self, context: SimulationContext):
         print("\n--- Running Step: ConvergenceAnalysis ---")
 
         for _ in range(self.optimization_attempts):
-            convergence = self._estimate_convergence(context)
-            print(convergence)
-
-            if convergence < self.optimization_threshold:
+            converged = self._estimate_convergence(context)
+            if converged:
                 print("Simulation converged!")
+                break
             else:
                 old_runtime = context.somd2_config.runtime
                 new_runtime = sr.u(old_runtime) + sr.u(self.optimization_runtime)
