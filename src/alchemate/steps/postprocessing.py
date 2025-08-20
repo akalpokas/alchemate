@@ -24,6 +24,7 @@ from pathlib import Path
 import BioSimSpace.FreeEnergy as BSS
 from alchemlyb.convergence import forward_backward_convergence
 import sire as sr
+from loguru import logger as _logger
 
 from .base import WorkflowStep
 from ..context import SimulationContext
@@ -69,7 +70,7 @@ class OptimizeConvergence(WorkflowStep):
         try:
             extracted_df_list = self._extract_somd2_parquet(context)
         except Exception as e:
-            print(f"Error reading extracted data: {e}")
+            _logger.error(f"Error reading extracted data: {e}")
 
         if not extracted_df_list:
             raise RuntimeError(
@@ -86,7 +87,7 @@ class OptimizeConvergence(WorkflowStep):
         df = df[(df["data_fraction"] >= 0.5) & (df["data_fraction"] <= 1)]
 
         free_energy_std = df["Forward"].std()
-        print(f"Free energy standard deviation: {free_energy_std:.4f} kT/mol")
+        _logger.info(f"Free energy standard deviation: {free_energy_std:.4f} kT/mol")
 
         if free_energy_std < self.optimization_threshold:
             return True
@@ -94,17 +95,17 @@ class OptimizeConvergence(WorkflowStep):
             return False
 
     def run(self, context: SimulationContext):
-        print("\n--- Running Step: ConvergenceAnalysis ---")
+        _logger.info("\n--- Running Step: ConvergenceAnalysis ---")
 
         for _ in range(self.optimization_attempts):
             converged = self._estimate_convergence(context)
             if converged:
-                print("Simulation converged!")
+                _logger.success("Simulation converged!")
                 break
             else:
                 old_runtime = context.somd2_config.runtime
                 new_runtime = sr.u(old_runtime) + sr.u(self.optimization_runtime)
-                print(f"Extending runtime from {old_runtime} to {new_runtime}")
+                _logger.info(f"Extending runtime from {old_runtime} to {new_runtime}")
                 context.somd2_config.restart = True
                 context.somd2_config.runtime = new_runtime.to_string()
                 _run_somd2_workflow(context=context)

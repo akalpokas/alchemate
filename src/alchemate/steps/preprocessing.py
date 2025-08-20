@@ -25,19 +25,7 @@ import sire as sr
 from .base import WorkflowStep
 from ..context import SimulationContext
 from ._run_somd2 import _run_somd2_workflow
-
-
-class PrepareSystem(WorkflowStep):
-    """A step to set up simulation parameters."""
-
-    def run(self, context: SimulationContext):
-        print("\n--- Running Step: PrepareSystem ---")
-        print(f"Reading from {context.preprocess_parameters} to determine parameters.")
-
-        # This step's logic would go here. For now, we'll just add some params.
-        context.preprocess_parameters["temperature"] = 300  # in Kelvin
-        context.preprocess_parameters["box_size"] = (10, 10, 10)  # in Angstroms
-        print("System parameters prepared and added to context.")
+from loguru import logger as _logger
 
 
 class OptimizeExchangeProbabilities(WorkflowStep):
@@ -66,7 +54,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             repex_matrix = context.somd2_config.output_directory / "repex_matrix.txt"
             repex_matrix = np.loadtxt(repex_matrix)
         except Exception as e:
-            print(f"Error reading repex_matrix: {e}")
+            _logger.error(f"Error reading repex_matrix: {e}")
 
         if context.somd2_config.lambda_values is None:
             lambda_values = np.linspace(0, 1, context.somd2_config.num_lambda).tolist()
@@ -77,18 +65,18 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         for i, row in enumerate(repex_matrix):
             if i < len(repex_matrix) - 1:
                 exchange_prob = row[i + 1]
-                print(
+                _logger.info(
                     f"Exchange probability between replica {i} and {i+1}: {exchange_prob}"
                 )
                 if exchange_prob < self.optimization_threshold:
                     require_optimization.append((i, i + 1))
-                    print(
+                    _logger.warning(
                         f"Warning: Low exchange probability detected ({exchange_prob})"
                     )
 
-        print("Replicas requiring optimization:")
+        _logger.info("Replicas requiring optimization:")
         for replica_pair in require_optimization:
-            print(f" - Replica {replica_pair[0]} and {replica_pair[1]}")
+            _logger.info(f" - Replica {replica_pair[0]} and {replica_pair[1]}")
 
         # insert a new lambda between lambda values that require optimization
         new_lambdas = []
@@ -101,13 +89,13 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             lambda_values.append(new_lambda)
 
         lambda_values = sorted(lambda_values)
-        print(f"New lambda values after optimization: {lambda_values}")
+        _logger.info(f"New lambda values after optimization: {lambda_values}")
         return lambda_values
 
     def run(self, context: SimulationContext):
-        print("\n--- Running Step: OptimizeExchangeProbabilities ---")
-        print(f"Using parameters from {context.preprocess_parameters}.")
-        print("System parameters prepared and added to context.")
+        _logger.info("\n--- Running Step: OptimizeExchangeProbabilities ---")
+        _logger.info(f"Using parameters from {context.preprocess_parameters}.")
+        _logger.info("System parameters prepared and added to context.")
 
         if self.vacuum_optimization:
             sire_system = sr.stream.load(context.system)
@@ -119,6 +107,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         # overwrite SOMD2 config
         context.somd2_config.runtime = self.optimization_runtime
         context.somd2_config.overwrite = True
+        _logger.info(context.somd2_config)
         _run_somd2_workflow(context=context)
 
         for _ in range(self.optimization_attempts):
@@ -131,7 +120,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
 
             optimized_lambda_values = self._optimize_exchange_matrix(context=context)
             if old_lambda_values == optimized_lambda_values:
-                print("Optimization successful!")
+                _logger.success("Optimization successful!")
                 break
             else:
                 context.somd2_config.lambda_values = optimized_lambda_values

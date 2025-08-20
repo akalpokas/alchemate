@@ -20,16 +20,17 @@
 #####################################################################
 
 import importlib.metadata
-from .context import SimulationContext
 from .steps.base import WorkflowStep
 
+from loguru import logger as _logger
 
-# A helper function to create and display the masthead
-def _display_masthead(package_name: str):
+
+# a helper function to create and display the masthead
+def _display_masthead():
     """Fetches the package version and displays a startup masthead."""
     try:
-        # Fetch the version of the installed package
-        version = importlib.metadata.version(package_name)
+        # fetch the version of the installed package
+        version = importlib.metadata.version("alchemate")
     except importlib.metadata.PackageNotFoundError:
         version = "unknown"
 
@@ -40,25 +41,24 @@ def _display_masthead(package_name: str):
 |   Version: {version:<38}|
 +--------------------------------------------------+
 """
-    print(masthead)
+    _logger.debug(masthead)
 
 
 class WorkflowManager:
-    def __init__(self, workflow_steps: list[WorkflowStep]):
+    def __init__(self, context, workflow_steps: list[WorkflowStep]):
+        self.context = context
         self.workflow_steps = workflow_steps
 
-    def execute(self, system: str, somd2_config):
-        _display_masthead(package_name="alchemate")
-
-        context = SimulationContext(system=system, somd2_config=somd2_config)
+    def execute(self):
+        _display_masthead()
 
         for step in self.workflow_steps:
             try:
-                step.run(context)
+                step.run(self.context)
             except Exception as e:
-                print(f"ERROR in step {step.__class__.__name__}: {e}")
-                print("Workflow halted.")
-                return None  # Or handle the error more gracefully
+                _logger.error(f"ERROR in step {step.__class__.__name__}: {e}")
+                _logger.error("Workflow execution failed.")
+                return None
 
-        print("\nWorkflow finished successfully!")
-        return context
+        _logger.success("Workflow finished successfully!")
+        return self.context

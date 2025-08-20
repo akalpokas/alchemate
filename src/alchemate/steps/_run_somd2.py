@@ -19,8 +19,9 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
-from alchemate.context import SimulationContext
+from loguru import logger as _logger
 import somd2
+from ..context import SimulationContext
 
 
 def _run_somd2_workflow(context: SimulationContext):
@@ -28,8 +29,8 @@ def _run_somd2_workflow(context: SimulationContext):
     runner = somd2.runner.RepexRunner(
         config=context.somd2_config, system=context.system
     )
-    print(runner)
+    _logger.info(f"Initialized runner with: {runner}")
     try:
         runner.run()
     except Exception as e:
-        print(f"Error occurred while running SOMD2 workflow: {e}")
+        _logger.error(f"Error occurred while running SOMD2 workflow: {e}")
