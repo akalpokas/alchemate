@@ -19,6 +19,7 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
+import pickle
 from somd2.config import Config as _somd2_config
 
 
@@ -38,3 +39,16 @@ class SimulationContext:
         self.postprocess_parameters = {}
         self.analysis_output = None
         self.result = None
+
+    def save(self):
+        # save context to a file
+        with open(
+            f"{self.somd2_config.output_directory}/alchemate_context.pkl", "wb"
+        ) as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, path):
+        # load context from a file
+        with open(path, "rb") as f:
+            return pickle.load(f)
