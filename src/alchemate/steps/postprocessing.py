@@ -82,12 +82,13 @@ class OptimizeConvergence(WorkflowStep):
         return converged
 
     def _test_convergence(self, df):
-        df = df[(df["data_fraction"] >= 0.5) & (df["data_fraction"] <= 1)]
-
         estimator_error = df["Forward_Error"].iloc[-1]
         _logger.info(f"Free energy estimator error: {estimator_error:.4f} kT/mol")
 
-        return estimator_error < self.optimization_threshold
+        if estimator_error < self.optimization_threshold:
+            return True
+        else:
+            return False
 
     def _execute(self, context: SimulationContext):
         for _ in range(self.optimization_attempts):

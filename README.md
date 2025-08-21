@@ -56,7 +56,7 @@ Or a further post-processing workflow can be plugged in to test for simulation c
 ```python
 simulation_workflow = [
     RunBasicCalculation(),
-    OptimizeConvergence(optimization_threshold=0.1) # Customize the workflow if needed
+    OptimizeConvergence(optimization_threshold=0.1)
 ]
 ```
 
