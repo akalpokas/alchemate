@@ -31,4 +31,4 @@ if __name__ == "__main__":
     # Access the final context for all of the results.
     if final_context:
         print("\n--- Final Results ---")
-        print(f"Final analysis output: {final_context.analysis_output}")
+        print(f"Final analysis results: {final_context.results}")

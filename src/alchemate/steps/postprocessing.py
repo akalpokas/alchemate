@@ -37,7 +37,7 @@ class OptimizeConvergence(WorkflowStep):
     def __init__(
         self,
         optimization_attempts: int = 3,
-        optimization_threshold: float = 0.25,  # std. dev. of kT/mol for final 50% of data
+        optimization_threshold: float = 0.20,  # acceptable estimator error < 0.20 kT/mol
         optimization_runtime: str = "500ps",
     ) -> None:
         super().__init__()
@@ -84,13 +84,10 @@ class OptimizeConvergence(WorkflowStep):
     def _test_convergence(self, df):
         df = df[(df["data_fraction"] >= 0.5) & (df["data_fraction"] <= 1)]
 
-        free_energy_std = df["Forward"].std()
-        _logger.info(f"Free energy standard deviation: {free_energy_std:.4f} kT/mol")
+        estimator_error = df["Forward_Error"].iloc[-1]
+        _logger.info(f"Free energy estimator error: {estimator_error:.4f} kT/mol")
 
-        if free_energy_std < self.optimization_threshold:
-            return True
-        else:
-            return False
+        return estimator_error < self.optimization_threshold
 
     def _execute(self, context: SimulationContext):
         for _ in range(self.optimization_attempts):
