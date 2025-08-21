@@ -20,9 +20,8 @@
 #####################################################################
 
 import importlib.metadata
-from .steps.base import WorkflowStep
-
 from loguru import logger as _logger
+from .steps.base import WorkflowStep
 
 
 # a helper function to create and display the masthead
@@ -35,28 +34,57 @@ def _display_masthead():
         version = "unknown"
 
     masthead = f"""
-+--------------------------------------------------+
-|   alchemate:                                     |
-|   Modular SOMD2 processing workflows.            |
-|   Version: {version:<38}|
-+--------------------------------------------------+
++------------------------------------------------------------------------------+
+|                                                                              |
+|                                                                              |
+|  █████╗ ██╗      ██████╗██╗  ██╗███████╗███╗   ███╗ █████╗ ████████╗███████╗ |
+| ██╔══██╗██║     ██╔════╝██║  ██║██╔════╝████╗ ████║██╔══██╗╚══██╔══╝██╔════╝ |
+| ███████║██║     ██║     ███████║█████╗  ██╔████╔██║███████║   ██║   █████╗   |
+| ██╔══██║██║     ██║     ██╔══██║██╔══╝  ██║╚██╔╝██║██╔══██║   ██║   ██╔══╝   |
+| ██║  ██║███████╗╚██████╗██║  ██║███████╗██║ ╚═╝ ██║██║  ██║   ██║   ███████╗ |
+| ╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝ |
+|                                                                              |
+| Modular SOMD2 processing workflows.                                          |
+| Version: {version:<68}|
++------------------------------------------------------------------------------+
 """
-    _logger.debug(masthead)
+    _logger.info(masthead)
 
 
 class WorkflowManager:
+    """
+    Manages and executes a sequence of workflow steps using a shared context.
+
+    Args:
+        context: The shared context object passed to each workflow step.
+        workflow_steps (list[WorkflowStep]): A list of workflow step instances to execute.
+
+    Methods:
+        execute():
+            Executes each workflow step in order, passing the context to each step's `run` method.
+            After each successful step, the context is saved.
+            If any step raises an exception, logs the error and stops execution.
+            Returns the context if all steps succeed, otherwise returns None.
+    """
+
     def __init__(self, context, workflow_steps: list[WorkflowStep]):
         self.context = context
         self.workflow_steps = workflow_steps
 
     def execute(self):
+        """Executes the workflow steps."""
         _display_masthead()
 
         for step in self.workflow_steps:
             try:
+                _logger.info(f"Running step: {step.__class__.__name__}")
                 step.run(self.context)
+
+                # Pickle the context at the end of each successful step
+                self.context.save()
+
             except Exception as e:
-                _logger.error(f"ERROR in step {step.__class__.__name__}: {e}")
+                _logger.error(f"Error in step {step.__class__.__name__}: {e}")
                 _logger.error("Workflow execution failed.")
                 return None
 

@@ -1,6 +1,16 @@
 [![Build and test](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml/badge.svg?event=workflow_dispatch)](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml)
 
 # alchemate
+
+
+ █████╗ ██╗      ██████╗██╗  ██╗███████╗███╗   ███╗ █████╗ ████████╗███████╗
+██╔══██╗██║     ██╔════╝██║  ██║██╔════╝████╗ ████║██╔══██╗╚══██╔══╝██╔════╝
+███████║██║     ██║     ███████║█████╗  ██╔████╔██║███████║   ██║   █████╗
+██╔══██║██║     ██║     ██╔══██║██╔══╝  ██║╚██╔╝██║██╔══██║   ██║   ██╔══╝
+██║  ██║███████╗╚██████╗██║  ██║███████╗██║ ╚═╝ ██║██║  ██║   ██║   ███████╗
+╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+
+
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
 # Purpose
