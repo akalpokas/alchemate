@@ -21,11 +21,11 @@
 
 import numpy as np
 import sire as sr
+from loguru import logger as _logger
 
 from .base import WorkflowStep
 from ..context import SimulationContext
 from ._run_somd2 import _run_somd2_workflow
-from loguru import logger as _logger
 
 
 class OptimizeExchangeProbabilities(WorkflowStep):
@@ -92,12 +92,14 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         _logger.info(f"New lambda values after optimization: {lambda_values}")
         return lambda_values
 
-    def run(self, context: SimulationContext):
+    def _execute(self, context: SimulationContext):
         _logger.info("\n--- Running Step: OptimizeExchangeProbabilities ---")
-        _logger.info(f"Using parameters from {context.preprocess_parameters}.")
-        _logger.info("System parameters prepared and added to context.")
 
         if self.vacuum_optimization:
+            # TODO: Need to restore old system!
+            raise NotImplementedError(
+                "Vacuum optimization is not properly implemented yet."
+            )
             sire_system = sr.stream.load(context.system)
             perturbable_mols = sire_system.molecules("property is_perturbable")
             system = sr.system.System()

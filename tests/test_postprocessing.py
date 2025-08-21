@@ -7,8 +7,8 @@ from alchemate.context import SimulationContext
 
 
 @pytest.fixture
-def dummy_context():
-    context = SimulationContext(system="dummy_system", somd2_config=somd2_config())
+def mock_context():
+    context = SimulationContext(system="mock_system", somd2_config=somd2_config())
     return context
 
 
@@ -36,7 +36,7 @@ def poor_convergence_data():
     return df
 
 
-def test_optimize_convergence_needs_sampling(dummy_context, poor_convergence_data):
+def test_optimize_convergence_needs_sampling(mock_context, poor_convergence_data):
     optimizer = OptimizeConvergence()
 
     # Should insert new lambdas between pairs with <0.15 exchange prob
@@ -46,7 +46,7 @@ def test_optimize_convergence_needs_sampling(dummy_context, poor_convergence_dat
     assert result is False
 
 
-def test_optimize_convergence_finished_sampling(dummy_context, good_convergence_data):
+def test_optimize_convergence_finished_sampling(mock_context, good_convergence_data):
     optimizer = OptimizeConvergence()
 
     # Should insert new lambdas between pairs with <0.15 exchange prob

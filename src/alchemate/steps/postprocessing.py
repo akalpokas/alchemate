@@ -50,36 +50,34 @@ class OptimizeConvergence(WorkflowStep):
         Extracts energies from SOMD2 parquet files.
 
         Returns:
-        - extracted_df_list (list): A list of dataframes containing the extracted results for work directory.
+        - extracted_dfs (list): A list of dataframes containing the extracted results for work directory.
         """
 
         temperature = sr.u(context.somd2_config.temperature).value()
-        extracted_df_list = []
+        extracted_dfs = []
         glob_path = Path(context.somd2_config.output_directory)
         files = sorted(glob_path.glob("**/*.parquet"))
         for f in files:
             path = Path(f)
             extracted_df = BSS.Relative._somd2_extract(path, T=temperature)
-            extracted_df_list.append(extracted_df)
+            extracted_dfs.append(extracted_df)
 
-        return extracted_df_list
+        return extracted_dfs
 
     def _estimate_convergence(self, context: SimulationContext):
         """Internal function to calculate current free energy convergence."""
-        extracted_df_list = []
+        extracted_dfs = []
         try:
-            extracted_df_list = self._extract_somd2_parquet(context)
+            extracted_dfs = self._extract_somd2_parquet(context)
         except Exception as e:
             _logger.error(f"Error reading extracted data: {e}")
 
-        if not extracted_df_list:
+        if not extracted_dfs:
             raise RuntimeError(
                 "No extracted dataframes available for convergence analysis."
             )
 
-        convergence_df = forward_backward_convergence(
-            extracted_df_list, estimator="MBAR"
-        )
+        convergence_df = forward_backward_convergence(extracted_dfs, estimator="MBAR")
         converged = self._test_convergence(convergence_df)
         return converged
 
@@ -94,9 +92,7 @@ class OptimizeConvergence(WorkflowStep):
         else:
             return False
 
-    def run(self, context: SimulationContext):
-        _logger.info("\n--- Running Step: ConvergenceAnalysis ---")
-
+    def _execute(self, context: SimulationContext):
         for _ in range(self.optimization_attempts):
             converged = self._estimate_convergence(context)
             if converged:

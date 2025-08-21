@@ -1,20 +1,22 @@
 import pytest
 import numpy as np
+from somd2.config import Config as somd2_config
+
 from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 from alchemate.context import SimulationContext
-from somd2.config import Config as somd2_config
 
 
 @pytest.fixture
-def dummy_context():
-    context = SimulationContext(system="dummy_system", somd2_config=somd2_config())
+def mock_context():
+    """Basic context fixture."""
+    context = SimulationContext(system="mock_system", somd2_config=somd2_config())
     context.somd2_config.num_lambda = 4
     return context
 
 
 @pytest.fixture
 def repex_matrix_low_prob(tmp_path):
-    # 4x4 matrix, low exchange probability (< 0.15) between 0-1 and 2-3
+    """4x4 matrix, low exchange probability (< 0.15) between 0-1 and 2-3"""
     matrix = np.array(
         [
             [1.00, 0.00, 0.00, 0.00],
@@ -28,7 +30,7 @@ def repex_matrix_low_prob(tmp_path):
 
 @pytest.fixture
 def repex_matrix_high_prob(tmp_path):
-    # 4x4 matrix, high exchange probability
+    """4x4 matrix, high exchange probability"""
     matrix = np.array(
         [
             [0.75, 0.25, 0.00, 0.00],
@@ -41,14 +43,18 @@ def repex_matrix_high_prob(tmp_path):
 
 
 def test_optimize_exchange_matrix_inserts_new_lambdas(
-    tmp_path, dummy_context, repex_matrix_low_prob
+    tmp_path, mock_context, repex_matrix_low_prob
 ):
-    dummy_context.somd2_config.output_directory = tmp_path
+    """
+    Test aimed at checking whether the optimization process correctly identifies
+    when lambda values need to be inserted.
+    """
+    mock_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_low_prob)
     optimizer = OptimizeExchangeProbabilities()
 
     # Should insert new lambdas between pairs with <0.15 exchange prob
-    result = optimizer._optimize_exchange_matrix(dummy_context)
+    result = optimizer._optimize_exchange_matrix(mock_context)
 
     # Should add lambdas between 0-1, 2-3, so we should have 6 in total
     assert len(result) == 6
@@ -59,14 +65,18 @@ def test_optimize_exchange_matrix_inserts_new_lambdas(
 
 
 def test_optimize_exchange_matrix_no_new_lambdas(
-    tmp_path, dummy_context, repex_matrix_high_prob
+    tmp_path, mock_context, repex_matrix_high_prob
 ):
-    dummy_context.somd2_config.output_directory = tmp_path
+    """
+    Test aimed at checking whether the optimization process correctly identifies
+    when no new lambda values need to be inserted.
+    """
+    mock_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_high_prob)
     optimizer = OptimizeExchangeProbabilities()
 
     # Should not insert any new lambdas
-    result = optimizer._optimize_exchange_matrix(dummy_context)
+    result = optimizer._optimize_exchange_matrix(mock_context)
 
     assert len(result) == 4
 

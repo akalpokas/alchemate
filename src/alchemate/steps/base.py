@@ -28,14 +28,23 @@ from ._run_somd2 import _run_somd2_workflow
 class WorkflowStep(ABC):
     """Base class for all workflow steps."""
 
-    @abstractmethod
     def run(self, context: SimulationContext):
         """Runs the workflow step."""
+
+        # Carry out the main logic for the step
+        self._execute(context)
+
+        step_name = self.__class__.__name__
+        context.completed_steps.add(step_name)
+
+    @abstractmethod
+    def _execute(self, context: SimulationContext):
+        """Executes the main logic for the workflow step. Implemented in subclasses."""
 
 
 # THE MAIN CALCULATION STEP (A WRAPPER)
 class RunBasicCalculation(WorkflowStep):
     """A step to run the external MD engine."""
 
-    def run(self, context: SimulationContext):
+    def _execute(self, context: SimulationContext):
         _run_somd2_workflow(context=context)

@@ -27,11 +27,7 @@ from somd2.config import Config as _somd2_config
 class SimulationContext:
     """A simple data bucket for passing along information through workflows."""
 
-    _mutable_attrs = [
-        "system",
-        "somd2_config",
-        "results",
-    ]
+    _mutable_attrs = ["system", "somd2_config", "results", "completed_steps"]
 
     def __init__(self, system, somd2_config):
         """Initializes the context and its mutable attributes."""
@@ -49,6 +45,7 @@ class SimulationContext:
         self.system = system
         self.somd2_config = somd2_config
         self.results = SimpleNamespace()  # to allow dynamic attribute assignment, i.e. self.results.new_attribute = value
+        self.completed_steps = set()  # to track completed workflow steps
 
         # Lock the instance to prevent further modifications outside mutable properties
         self._initialized = True

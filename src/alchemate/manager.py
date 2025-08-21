@@ -77,7 +77,14 @@ class WorkflowManager:
 
         for step in self.workflow_steps:
             try:
-                _logger.info(f"Running step: {step.__class__.__name__}")
+                _logger.info(f"Attempting to run step: {step.__class__.__name__}")
+                # Check if the step has been previously run
+                if step.__class__.__name__ in self.context.completed_steps:
+                    _logger.info(
+                        f"Step {step.__class__.__name__} has already been completed."
+                    )
+                    continue
+
                 step.run(self.context)
 
                 # Pickle the context at the end of each successful step
