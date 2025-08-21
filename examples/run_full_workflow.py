@@ -1,34 +1,26 @@
 from somd2.config import Config as somd2_config
 from alchemate.manager import WorkflowManager
 from alchemate.context import SimulationContext
-
-# Import the modular workflows you need for the calculation
 from alchemate.steps.base import RunBasicCalculation
 from alchemate.steps.postprocessing import OptimizeConvergence
 
-# Define SOMD2 configuration for setting up the physical simultion (PME, cutoff, timestep, etc.)
 somd2_config = somd2_config()
 somd2_config.cutoff_type = "RF"
 somd2_config.cutoff = "12A"
 somd2_config.runtime = "100ps"
 somd2_config.replica_exchange = True
 
-if __name__ == "__main__":
-    # Define the desired workflow
-    simulation_workflow = [
-        RunBasicCalculation(),
-        OptimizeConvergence(),
-    ]
+context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
 
-    context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
+simulation_workflow = [
+    RunBasicCalculation(),
+    OptimizeConvergence(),
+]
 
-    # Create the manager with this workflow
-    manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
+manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
+final_context = manager.execute()
 
-    # Run everything
-    final_context = manager.execute()
-
-    # Access the final context for all of the results.
-    if final_context:
-        print("\n--- Final Results ---")
-        print(f"Final analysis results: {final_context.results}")
+# Access the final context for all of the results.
+if final_context:
+    print("\n--- Final Results ---")
+    print(f"Final analysis results: {final_context.results}")

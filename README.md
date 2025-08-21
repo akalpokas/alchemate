@@ -26,19 +26,19 @@ somd2_config.cutoff_type = "RF"
 somd2_config.cutoff = "12A"
 somd2_config.replica_exchange = True
 
+# Create the context that keeps track of data
+context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
+
 # Define the desired workflow
 simulation_workflow = [
     RunBasicCalculation(),
     OptimizeConvergence(optimization_threshold=0.1) # Customize the workflow if needed
 ]
 
-# Create the context that keeps track of data
-context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
-
 # Create the manager with this workflow
 manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
 
-# Run everything
+# Run everything, manager will keep track of workflow steps that are completed
 final_context = manager.execute()
 ```
 
