@@ -26,7 +26,25 @@ from ._run_somd2 import _run_somd2_workflow
 
 # Template class for all processing steps.
 class WorkflowStep(ABC):
-    """Base class for all workflow steps."""
+    """
+    Base class for all workflow steps in a simulation workflow.
+
+    This abstract class defines the interface and common behavior for workflow steps.
+    Subclasses must implement the `_execute` method, which contains the main logic for the step.
+
+    Methods
+    -------
+    run(context: SimulationContext)
+        Executes the workflow step by calling the subclass-defined `_execute` method,
+        and marks the step as completed in the provided context.
+
+    _execute(context: SimulationContext)
+        Abstract method to be implemented by subclasses. Contains the main logic for the workflow step.
+
+    Attributes
+    ----------
+    None defined in the base class.
+    """
 
     def run(self, context: SimulationContext):
         """Runs the workflow step."""
@@ -34,6 +52,7 @@ class WorkflowStep(ABC):
         # Carry out the main logic for the step
         self._execute(context)
 
+        # Mark step as completed
         step_name = self.__class__.__name__
         context.completed_steps.add(step_name)
 
@@ -42,9 +61,8 @@ class WorkflowStep(ABC):
         """Executes the main logic for the workflow step. Implemented in subclasses."""
 
 
-# THE MAIN CALCULATION STEP (A WRAPPER)
 class RunBasicCalculation(WorkflowStep):
-    """A step to run the external MD engine."""
+    """A step to run a basic SOMD2 calculation."""
 
     def _execute(self, context: SimulationContext):
         _run_somd2_workflow(context=context)

@@ -25,7 +25,36 @@ from somd2.config import Config as _somd2_config
 
 
 class SimulationContext:
-    """A simple data bucket for passing along information through workflows."""
+    """
+    SimulationContext is a container class for managing and passing workflow-related data.
+
+    Attributes
+    ----------
+    system : Any
+        The system object associated with the simulation.
+    somd2_config : Somd2Config
+        Configuration object for the simulation, validated on initialization.
+    results : types.SimpleNamespace
+        Namespace for dynamically storing results and intermediate data.
+    completed_steps : set
+        Set of workflow step identifiers that have been completed.
+
+    Methods
+    -------
+    __init__(system, somd2_config)
+        Initializes the context with the provided system and configuration, and sets up mutable attributes.
+    __setattr__(name, value)
+        Overrides attribute assignment to enforce immutability, except for specified mutable attributes.
+    save()
+        Serializes and saves the context object to a file in the output directory.
+    load(path)
+        Class method to load a serialized context object from a file.
+
+    Notes
+    -----
+    - Only attributes listed in `_mutable_attrs` can be modified after initialization.
+    - Use the `results` attribute for storing new or intermediate data during workflows.
+    """
 
     _mutable_attrs = ["system", "somd2_config", "results", "completed_steps"]
 

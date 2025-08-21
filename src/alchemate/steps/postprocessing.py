@@ -32,12 +32,39 @@ from ._run_somd2 import _run_somd2_workflow
 
 
 class OptimizeConvergence(WorkflowStep):
-    """ """
+    """
+    Workflow step for optimizing the convergence of free energy calculations.
+
+    This class attempts to ensure that the free energy estimator error falls below a specified threshold
+    by repeatedly extending the simulation runtime and re-evaluating convergence. It extracts energy data
+    from SOMD2 parquet files, estimates convergence using the MBAR estimator, and manages simulation restarts.
+
+    Attributes
+    ----------
+    optimization_attempts (int): Maximum number of optimization attempts to achieve convergence.
+    optimization_threshold (float): Acceptable estimator error threshold (in kT/mol).
+    optimization_runtime (str): Amount of simulation time to add per optimization attempt.
+
+    Methods
+    -------
+    _extract_somd2_parquet(context):
+        Extracts energy data from SOMD2 parquet files in the simulation output directory.
+
+    _estimate_convergence(context):
+        Calculates current free energy convergence using extracted data and MBAR estimator.
+
+    _test_convergence(df):
+        Tests if the estimator error in the provided DataFrame is below the optimization threshold.
+
+    _execute(context):
+        Runs the optimization loop, extending simulation runtime and restarting as needed until
+        convergence is achieved or the maximum number of attempts is reached.
+    """
 
     def __init__(
         self,
         optimization_attempts: int = 3,
-        optimization_threshold: float = 0.20,  # acceptable estimator error < 0.20 kT/mol
+        optimization_threshold: float = 0.20,
         optimization_runtime: str = "500ps",
     ) -> None:
         super().__init__()
@@ -57,6 +84,7 @@ class OptimizeConvergence(WorkflowStep):
         extracted_dfs = []
         glob_path = Path(context.somd2_config.output_directory)
         files = sorted(glob_path.glob("**/*.parquet"))
+
         for f in files:
             path = Path(f)
             extracted_df = BSS.Relative._somd2_extract(path, T=temperature)

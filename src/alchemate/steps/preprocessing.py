@@ -21,6 +21,7 @@
 
 import numpy as np
 import sire as sr
+from copy import deepcopy
 from loguru import logger as _logger
 
 from .base import WorkflowStep
@@ -29,10 +30,30 @@ from ._run_somd2 import _run_somd2_workflow
 
 
 class OptimizeExchangeProbabilities(WorkflowStep):
-    """A step to optimize exchange probabilities.
-    This is done by running a short simulation of the target system in vacuum.
-    Replica exchange matrix is then read along with the lambda schedule in order
-    to determine where the optimization should occur.
+    """
+    Workflow step to optimize replica exchange probabilities by adjusting the lambda schedule.
+
+    This step runs a short simulation (in vacuum by default) to evaluate the exchange probabilities
+    between neighboring replicas. If any pair of replicas exhibits a low exchange probability
+    (below the specified threshold), new lambda values are inserted between those replicas to improve
+    exchange rates. The optimization is performed iteratively for a specified number of attempts.
+
+    Attributes
+    ----------
+    optimization_attempts (int): Number of optimization iterations to perform.
+    optimization_threshold (float): Minimum acceptable exchange probability between replicas.
+    optimization_runtime (str): Duration of each optimization simulation.
+    vacuum_optimization (bool): Whether to perform optimization in vacuum.
+
+    Methods
+    -------
+    _optimize_exchange_matrix(context):
+        Reads the exchange matrix and lambda schedule, identifies pairs with low exchange
+        probabilities, and inserts new lambda values to improve exchange rates.
+
+    _execute(context):
+        Runs the optimization workflow, updating the lambda schedule as needed and restoring
+        the original system after optimization.
     """
 
     def __init__(
@@ -71,20 +92,19 @@ class OptimizeExchangeProbabilities(WorkflowStep):
                 if exchange_prob < self.optimization_threshold:
                     require_optimization.append((i, i + 1))
                     _logger.warning(
-                        f"Warning: Low exchange probability detected ({exchange_prob})"
+                        f"Low exchange probability detected ({exchange_prob})"
                     )
 
         _logger.info("Replicas requiring optimization:")
         for replica_pair in require_optimization:
             _logger.info(f" - Replica {replica_pair[0]} and {replica_pair[1]}")
 
-        # insert a new lambda between lambda values that require optimization
+        # Insert a new lambda between lambda values that require optimization
         new_lambdas = []
         for i, j in require_optimization:
             new_lambda = (lambda_values[i] + lambda_values[j]) / 2
             new_lambdas.append(round(new_lambda, 3))
 
-        # insert new lambdas into the original array
         for new_lambda in new_lambdas:
             lambda_values.append(new_lambda)
 
@@ -93,20 +113,16 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         return lambda_values
 
     def _execute(self, context: SimulationContext):
-        _logger.info("\n--- Running Step: OptimizeExchangeProbabilities ---")
-
         if self.vacuum_optimization:
-            # TODO: Need to restore old system!
-            raise NotImplementedError(
-                "Vacuum optimization is not properly implemented yet."
-            )
+            # Retain the original system
+            original_system = deepcopy(context.system)
             sire_system = sr.stream.load(context.system)
             perturbable_mols = sire_system.molecules("property is_perturbable")
             system = sr.system.System()
             system.add(perturbable_mols)
             context.system = system
 
-        # overwrite SOMD2 config
+        # Overwrite SOMD2 config with step specific params
         context.somd2_config.runtime = self.optimization_runtime
         context.somd2_config.overwrite = True
         _logger.info(context.somd2_config)
@@ -121,9 +137,14 @@ class OptimizeExchangeProbabilities(WorkflowStep):
                 old_lambda_values = context.somd2_config.lambda_values
 
             optimized_lambda_values = self._optimize_exchange_matrix(context=context)
+
+            # Success condition test
             if old_lambda_values == optimized_lambda_values:
                 _logger.success("Optimization successful!")
                 break
             else:
                 context.somd2_config.lambda_values = optimized_lambda_values
                 _run_somd2_workflow(context=context)
+
+        # Now restore the old system to prevent any modifications
+        context.system = original_system

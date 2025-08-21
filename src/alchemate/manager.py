@@ -55,16 +55,18 @@ class WorkflowManager:
     """
     Manages and executes a sequence of workflow steps using a shared context.
 
-    Args:
-        context: The shared context object passed to each workflow step.
-        workflow_steps (list[WorkflowStep]): A list of workflow step instances to execute.
+    Attributes
+    ----------
+    context: The shared context object passed to each workflow step.
+    workflow_steps (list[WorkflowStep]): A list of workflow step instances to execute.
 
-    Methods:
-        execute():
-            Executes each workflow step in order, passing the context to each step's `run` method.
-            After each successful step, the context is saved.
-            If any step raises an exception, logs the error and stops execution.
-            Returns the context if all steps succeed, otherwise returns None.
+    Methods
+    -------
+    execute():
+        Executes each workflow step in order, passing the context to each step's `run` method.
+        After each successful step, the context is saved.
+        If any step raises an exception, logs the error and stops execution.
+        Returns the context if all steps succeed, otherwise returns None.
     """
 
     def __init__(self, context, workflow_steps: list[WorkflowStep]):
