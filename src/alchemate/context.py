@@ -20,28 +20,53 @@
 #####################################################################
 
 import pickle
+from types import SimpleNamespace
 from somd2.config import Config as _somd2_config
 
 
-# A simple data bucket for passing along information through workflows.
 class SimulationContext:
-    def __init__(self, system, somd2_config):
-        self.system = system
+    """A simple data bucket for passing along information through workflows."""
 
-        # Check type of somd2_config
+    _mutable_attrs = [
+        "system",
+        "somd2_config",
+        "results",
+    ]
+
+    def __init__(self, system, somd2_config):
+        """Initializes the context and its mutable attributes."""
+
+        # Flag for locking the instance
+        self._initialized = False
+
+        # Perform input validation
         if not isinstance(somd2_config, type(_somd2_config())):
             raise TypeError(
                 f"Expected somd2_config to be an instance of {_somd2_config}, got {type(somd2_config)}"
             )
 
+        # Define mutable attributes
+        self.system = system
         self.somd2_config = somd2_config
-        self.preprocess_parameters = {}
-        self.postprocess_parameters = {}
-        self.analysis_output = None
-        self.result = None
+        self.results = SimpleNamespace()  # to allow dynamic attribute assignment, i.e. self.results.new_attribute = value
+
+        # Lock the instance to prevent further modifications outside mutable properties
+        self._initialized = True
+
+    def __setattr__(self, name, value) -> None:
+        """Override attribute setting to enforce immutability."""
+        is_initialized = hasattr(self, "_initialized") and self._initialized
+        if is_initialized and name not in self._mutable_attrs:
+            raise AttributeError(
+                f"'{type(self).__name__}' attribute '{name}' is immutable. "
+                "Use the 'results' property for storing new data."
+            )
+
+        # If everything is fine, set the attribute
+        super().__setattr__(name, value)
 
     def save(self):
-        # save context to a file
+        """Save context to a file."""
         with open(
             f"{self.somd2_config.output_directory}/alchemate_context.pkl", "wb"
         ) as f:
@@ -49,6 +74,6 @@ class SimulationContext:
 
     @classmethod
     def load(cls, path):
-        # load context from a file
+        """Load context from a file."""
         with open(path, "rb") as f:
             return pickle.load(f)

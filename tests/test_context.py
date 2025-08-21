@@ -12,6 +12,14 @@ def dummy_context(tmp_path):
     return context
 
 
+@pytest.mark.xfail(
+    reason="This test is expected as it tries to modify immutable properties of SimulationContext class"
+)
+def test_immutable_properties(dummy_context):
+    with pytest.raises(AttributeError):
+        dummy_context.foo = "bar"
+
+
 def test_saving_and_loading(tmp_path, dummy_context):
     dummy_context.save()
     loaded_context = SimulationContext.load(f"{tmp_path}/alchemate_context.pkl")
