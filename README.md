@@ -1,62 +1,81 @@
-[![Build and test](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml/badge.svg?event=workflow_dispatch)](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml)
-
 # alchemate
+
+[![Build and test](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml/badge.svg?event=workflow_dispatch)](https://github.com/akalpokas/alchemate/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
-# Purpose
+## Purpose
 Alchemate implements and abstracts high-level functionality to SOMD2 FEP engine, such as iterative λ-schedule optimization or convergence detection for example. The framework is designed to be modular and extensible which allows for arbitrary workflows to be written and plugged in easily.
 
-# Usage
+## Usage
 Using alchemate involves creating a SOMD2 configuration object, defining a simulation workflow, and creating a manager which will run the specified workflows sequentially:
 
 ```python
 from somd2.config import Config as somd2_config
 from alchemate.manager import WorkflowManager
+from alchemate.context import SimulationContext
 
 # Import the modular workflows you need for the calculation
-from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 from alchemate.steps.base import RunBasicCalculation
+from alchemate.steps.postprocessing import OptimizeConvergence
 
-# Define SOMD2 configuration for setting up the physical simultion
+# Define SOMD2 configuration for setting up the physical simultion (electrostatics, cutoff, timestep, etc.)
 somd2_config = somd2_config()
-somd2_config.cutoff_type = "PME"
-somd2_config.cutoff = "14A"
+somd2_config.cutoff_type = "RF"
+somd2_config.cutoff = "12A"
 somd2_config.replica_exchange = True
 
 # Define the desired workflow
 simulation_workflow = [
+    RunBasicCalculation(),
+    OptimizeConvergence(optimization_threshold=0.1) # Customize the workflow if needed
+]
+
+# Create the context that keeps track of data
+context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
+
+# Create the manager with this workflow
+manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
+
+# Run everything
+final_context = manager.execute()
+```
+
+At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated with new information. This can for example, be used to attempt and pre-optimize the λ-schedule of a transformation in vacuum, before using the updated in the main simulation:
+
+```python
+simulation_workflow = [
     OptimizeExchangeProbabilities(optimization_attempts=3),
     RunBasicCalculation()
 ]
-
-# Create the manager with this workflow
-manager = WorkflowManager(workflow_steps=simulation_workflow)
-
-# Run everything
-context = manager.execute(system="merged_molecule.s3", somd2_config=somd2_config)
 ```
-
-At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated. This for example can be used to attempt and pre-optimize λ-schedule of a transformation in vacuum before passing the context to the main simulation:
-
-ADD CODE EXAMPLE
 
 Or a further post-processing workflow can be plugged in to test for simulation convergence:
 
-ADD CODE EXAMPLE - show customization
+```python
+simulation_workflow = [
+    RunBasicCalculation(),
+    OptimizeConvergence(optimization_threshold=0.1) # Customize the workflow if needed
+]
+```
 
+In general, workflows are divided into 3 different categories based on the data that the context is supposed to hold at that point:
+- Pre-processing: Simulation data is not expected. Workflows here perform actions to augment the base workflow.
+- Base: Simulation data not is expected, but will be used if present. Workflows here establish basic simulation data.
+- Post-processing: Previous simulation data is expected. Workflows here perform actions on finished simulations and extend them if needed.
 
 Head to [examples](examples/) for more detailed scripts.
 ___
-# Installation
+## Installation
 
-## General use
+### General use
 To install alchemate, please install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment first. Then you can install alchemate into your environment by cloning this repository, and running:
 ```bash
 pip install -e .
 ```
 
-## Developing and contributing
+### Developing and contributing
 
 Developer dependencies can be installed with:
 ```bash
