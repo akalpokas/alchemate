@@ -42,7 +42,7 @@ manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
 final_context = manager.execute()
 ```
 
-At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated with new information. This can for example, be used to attempt and pre-optimize the λ-schedule of a transformation in vacuum, before using the updated in the main simulation:
+At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated with new information. This can for example, be used to attempt and pre-optimize the λ-schedule of a transformation in vacuum, before using the updated context in the main simulation:
 
 ```python
 simulation_workflow = [
@@ -61,9 +61,15 @@ simulation_workflow = [
 ```
 
 In general, workflows are divided into 3 different categories based on the data that the context is supposed to hold at that point:
-- Pre-processing: Simulation data is not expected. Workflows here perform actions to augment the base workflow.
-- Base: Simulation data not is expected, but will be used if present. Workflows here establish basic simulation data.
-- Post-processing: Previous simulation data is expected. Workflows here perform actions on finished simulations and extend them if needed.
+1. **Pre-processing:**
+    - Simulation data is not expected.
+    - Workflows here perform actions to augment the base workflow.
+2. **Base:**
+    - Simulation data not is expected, but will be used if present.
+    - Workflows here establish basic simulation data.
+3. **Post-processing:**
+    - Previous simulation data is expected.
+    - Workflows here perform actions on finished simulations and extend them if needed.
 
 Head to [examples](examples/) for more detailed scripts.
 ___
