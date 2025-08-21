@@ -147,4 +147,5 @@ class OptimizeExchangeProbabilities(WorkflowStep):
                 _run_somd2_workflow(context=context)
 
         # Now restore the old system to prevent any modifications
-        context.system = original_system
+        if self.vacuum_optimization:
+            context.system = original_system
