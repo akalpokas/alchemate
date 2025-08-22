@@ -19,14 +19,16 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
+from copy import deepcopy
+import logging
 import numpy as np
 import sire as sr
-from copy import deepcopy
-from loguru import logger as _logger
 
 from .base import WorkflowStep
 from ..context import SimulationContext
 from ._run_somd2 import _run_somd2_workflow
+
+_logger = logging.getLogger("alchemate.logger")
 
 
 class OptimizeExchangeProbabilities(WorkflowStep):

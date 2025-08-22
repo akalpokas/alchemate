@@ -19,9 +19,11 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
-from loguru import logger as _logger
+import logging
 import somd2
 from ..context import SimulationContext
+
+_logger = logging.getLogger("alchemate.logger")
 
 
 def _run_somd2_workflow(context: SimulationContext):

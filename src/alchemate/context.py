@@ -19,9 +19,12 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
+import logging
 import pickle
 from types import SimpleNamespace
 from somd2.config import Config as _somd2_config
+
+_logger = logging.getLogger("alchemate.logger")
 
 
 class SimulationContext:
@@ -93,9 +96,9 @@ class SimulationContext:
 
     def save(self):
         """Save context to a file."""
-        with open(
-            f"{self.somd2_config.output_directory}/alchemate_context.pkl", "wb"
-        ) as f:
+        output_path = f"{self.somd2_config.output_directory}/alchemate_context.pkl"
+        _logger.info(f"Saving context to {output_path}")
+        with open(output_path, "wb") as f:
             pickle.dump(self, f)
 
     @classmethod
