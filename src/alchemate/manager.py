@@ -20,8 +20,10 @@
 #####################################################################
 
 import importlib.metadata
-from loguru import logger as _logger
+import logging
 from .steps.base import WorkflowStep
+
+_logger = logging.getLogger("alchemate.logger")
 
 
 # a helper function to create and display the masthead
@@ -97,5 +99,5 @@ class WorkflowManager:
                 _logger.error("Workflow execution failed.")
                 return None
 
-        _logger.success("Workflow finished successfully!")
+        _logger.info("Workflow finished successfully!")
         return self.context

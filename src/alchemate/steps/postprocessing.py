@@ -19,16 +19,17 @@
 # along with alchemate. If not, see <http://www.gnu.org/licenses/>.
 #####################################################################
 
-
+import logging
 from pathlib import Path
 import BioSimSpace.FreeEnergy as BSS
 from alchemlyb.convergence import forward_backward_convergence
 import sire as sr
-from loguru import logger as _logger
 
 from .base import WorkflowStep
 from ..context import SimulationContext
 from ._run_somd2 import _run_somd2_workflow
+
+_logger = logging.getLogger("alchemate.logger")
 
 
 class OptimizeConvergence(WorkflowStep):

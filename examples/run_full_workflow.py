@@ -3,6 +3,9 @@ from alchemate.manager import WorkflowManager
 from alchemate.context import SimulationContext
 from alchemate.steps.base import RunBasicCalculation
 from alchemate.steps.postprocessing import OptimizeConvergence
+from alchemate.logger import setup_logging
+
+setup_logging()
 
 somd2_config = somd2_config()
 somd2_config.cutoff_type = "RF"
