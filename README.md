@@ -99,3 +99,26 @@ Testing is done using:
 ```bash
 python -m pytest -svvv --color=yes tests
 ```
+
+#### Adding new workflow steps
+
+Every workflow step in alchemate is derived from the `WorkflowStep` [template class](src/alchemate/steps/base.py`). The template class ensures that each derived class will be provided a `SimulationContext` class during the run time. Upon the step completion, the `WorkflowManager` will record the name of the step in `SimulationContext.completed_steps`, which allows it to keep track of what has been previously run (for example, if restarting the full workflow). Each derived `WorkflowStep` class needs to implement a valid `_execute()` method in order to be used in a workflow.
+
+For example to create a basic dummy class:
+
+```python
+    class DummyClass(WorkflowStep):
+        """
+        Some docs...
+        """
+
+        def __init__(
+            self,
+            some_parameter: int = 3
+        ) -> None:
+            super().__init__()
+            self.some_parameter = some_parameter
+
+        def _execute(self, context: SimulationContext):
+            # Access and modify context here!
+```
