@@ -4,15 +4,16 @@ from alchemate.context import SimulationContext
 from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
 
 somd2_config = somd2_config()
-somd2_config.cutoff_type = "PME"
-somd2_config.cutoff = "14A"
+somd2_config.cutoff_type = "RF"
+somd2_config.cutoff = "12A"
+somd2_config.num_lambda = 4
 somd2_config.replica_exchange = True
 somd2_config.log_level = "debug"
 
 context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_config)
 
 simulation_workflow = [
-    OptimizeExchangeProbabilities(),
+    OptimizeExchangeProbabilities(optimization_runtime="100ps"),
 ]
 
 manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
