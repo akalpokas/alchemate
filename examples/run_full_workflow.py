@@ -1,4 +1,4 @@
-from somd2.config import Config as somd2_config
+from somd2.config import Config
 from alchemate.manager import WorkflowManager
 from alchemate.context import SimulationContext
 from alchemate.steps.base import RunBasicCalculation
@@ -7,7 +7,7 @@ from alchemate.logger import setup_logging
 
 setup_logging()
 
-somd2_config = somd2_config()
+somd2_config = Config()
 somd2_config.cutoff_type = "RF"
 somd2_config.cutoff = "12A"
 somd2_config.runtime = "100ps"

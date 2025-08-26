@@ -22,7 +22,7 @@
 import logging
 import pickle
 from types import SimpleNamespace
-from somd2.config import Config as _somd2_config
+from somd2.config import Config
 
 _logger = logging.getLogger("alchemate.logger")
 
@@ -35,7 +35,7 @@ class SimulationContext:
     ----------
     system : Any
         The system object associated with the simulation.
-    somd2_config : Somd2Config
+    somd2_config : Config
         Configuration object for the simulation, validated on initialization.
     results : types.SimpleNamespace
         Namespace for dynamically storing results and intermediate data.
@@ -68,9 +68,9 @@ class SimulationContext:
         self._initialized = False
 
         # Perform input validation
-        if not isinstance(somd2_config, type(_somd2_config())):
+        if not isinstance(somd2_config, type(Config())):
             raise TypeError(
-                f"Expected somd2_config to be an instance of {_somd2_config}, got {type(somd2_config)}"
+                f"Expected somd2_config to be an instance of {Config}, got {type(somd2_config)}"
             )
 
         # Define mutable attributes
