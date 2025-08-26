@@ -92,9 +92,9 @@ def _run_somd2_workflow(
             _logger.error(traceback.format_exc())
 
             # Begin soft restart loop, here we will try to restart a failed workflow
-            for soft_attempt in range(1, max_soft_restarts + 1):
+            for soft_attempt in range(max_soft_restarts):
                 _logger.debug(
-                    f"Starting soft attempt {soft_attempt}/{max_soft_restarts}"
+                    f"Starting soft attempt {soft_attempt + 1}/{max_soft_restarts}"
                 )
 
                 context.somd2_config.restart = True
