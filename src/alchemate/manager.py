@@ -99,5 +99,5 @@ class WorkflowManager:
                 _logger.error("Workflow execution failed.")
                 return None
 
-        _logger.info("Workflow finished successfully!")
+        _logger.info(f"Workflow {step.__class__.__name__} executed successfully.")
         return self.context
