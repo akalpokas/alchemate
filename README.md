@@ -14,7 +14,7 @@ Alchemate implements and abstracts high-level functionality to SOMD2 FEP engine,
 Using alchemate involves creating a SOMD2 configuration object, defining a simulation workflow, and creating a manager which will run the specified workflows sequentially:
 
 ```python
-from somd2.config import Config as somd2_config
+from somd2.config import Config
 from alchemate.manager import WorkflowManager
 from alchemate.context import SimulationContext
 
@@ -23,7 +23,7 @@ from alchemate.steps.base import RunBasicCalculation
 from alchemate.steps.postprocessing import OptimizeConvergence
 
 # Define SOMD2 configuration for setting up the physical simultion (electrostatics, cutoff, timestep, etc.)
-somd2_config = somd2_config()
+somd2_config = Config()
 somd2_config.cutoff_type = "RF"
 somd2_config.cutoff = "12A"
 somd2_config.replica_exchange = True
