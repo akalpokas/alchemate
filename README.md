@@ -34,7 +34,7 @@ context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_conf
 # Define the desired workflow
 simulation_workflow = [
     RunBasicCalculation(),
-    OptimizeConvergence(optimization_threshold=0.1) # Customize the workflow if needed
+    OptimizeConvergence(optimization_heuristics={"estimator_error": 0.1, "dg_slope": 0.5}) # Customize the workflow if needed
 ]
 
 # Create the manager with this workflow
@@ -58,7 +58,7 @@ Or a further post-processing workflow can be plugged in to test for simulation c
 ```python
 simulation_workflow = [
     RunBasicCalculation(),
-    OptimizeConvergence(optimization_threshold=0.1)
+    OptimizeConvergence()
 ]
 ```
 
