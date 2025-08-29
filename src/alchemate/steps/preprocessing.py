@@ -142,7 +142,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
 
             # Success condition test
             if old_lambda_values == optimized_lambda_values:
-                _logger.success("Optimization successful!")
+                _logger.info("Optimization successful!")
                 break
             else:
                 context.somd2_config.lambda_values = optimized_lambda_values
