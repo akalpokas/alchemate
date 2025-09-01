@@ -87,7 +87,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
         require_optimization = []
         for i, row in enumerate(repex_matrix):
             if i < len(repex_matrix) - 1:
-                exchange_prob = row[i + 1]
+                exchange_prob = round(row[i + 1], ndigits=2)
                 _logger.info(
                     f"Exchange probability between replica {i} and {i+1}: {exchange_prob}"
                 )

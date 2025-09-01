@@ -73,9 +73,10 @@ class SimulationContext:
                 f"Expected somd2_config to be an instance of {Config}, got {type(somd2_config)}"
             )
 
-        # Define mutable attributes
+        # Define attributes
         self.system = system
         self.somd2_config = somd2_config
+        self.base_directory = somd2_config.output_directory
         self.results = SimpleNamespace()  # to allow dynamic attribute assignment, i.e. self.results.new_attribute = value
         self.completed_steps = set()  # to track completed workflow steps
 

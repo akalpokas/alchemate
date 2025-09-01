@@ -15,9 +15,6 @@ def mock_context(tmp_path):
     return context
 
 
-@pytest.mark.xfail(
-    reason="This test is expected to fail as it tries to modify immutable properties of SimulationContext class"
-)
 def test_immutable_properties(mock_context):
     with pytest.raises(AttributeError):
         mock_context.foo = "bar"

@@ -21,7 +21,10 @@
 
 import importlib.metadata
 import logging
+import shutil
 from .steps.base import WorkflowStep
+import os
+
 
 _logger = logging.getLogger("alchemate.logger")
 
@@ -87,8 +90,26 @@ class WorkflowManager:
                     _logger.info(
                         f"Step {step.__class__.__name__} has already been completed."
                     )
+                    # TODO: Need to think about how to handle directories upon file restart
                     continue
 
+                # Create a directory for the current step
+                step_dir = self.context.base_directory / step.__class__.__name__
+                _logger.debug(f"Creating directory for step: {step_dir}")
+                os.makedirs(step_dir, exist_ok=False)
+
+                # Copy the contents of the current step's directory
+                _logger.debug(
+                    f"Copying contents from {self.context.somd2_config.output_directory} to {step_dir}"
+                )
+                for item in self.context.somd2_config.output_directory.glob("*"):
+                    if item.is_file():
+                        shutil.copy(item, step_dir)
+
+                # Update the context with the new step directory
+                self.context.somd2_config.output_directory = step_dir
+
+                # Run the step
                 step.run(self.context)
 
                 # Pickle the context at the end of each successful step
