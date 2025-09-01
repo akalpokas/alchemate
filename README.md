@@ -48,7 +48,7 @@ At the heart of alchemate is the `SimulationContext` class which gets passed thr
 
 ```python
 simulation_workflow = [
-    OptimizeExchangeProbabilities(optimization_attempts=3),
+    OptimizeLambdaProbabilities(optimization_attempts=3),
     RunBasicCalculation()
 ]
 ```

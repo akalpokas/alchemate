@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from somd2.config import Config as somd2_config
 
-from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
+from alchemate.steps.preprocessing import OptimizeLambdaProbabilities
 from alchemate.context import SimulationContext
 
 
@@ -51,10 +51,12 @@ def test_optimize_exchange_matrix_inserts_new_lambdas(
     """
     mock_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_low_prob)
-    optimizer = OptimizeExchangeProbabilities()
+    optimizer = OptimizeLambdaProbabilities(
+        optimization_target="repex_matrix", optimization_threshold=0.15
+    )
 
-    # Should insert new lambdas between pairs with <0.15 exchange prob
-    result = optimizer._optimize_exchange_matrix(mock_context)
+    # Should insert new lambdas between pairs with <0.05 exchange prob
+    result = optimizer._optimize_matrix(mock_context)
 
     # Should add lambdas between 0-1, 2-3, so we should have 6 in total
     assert len(result) == 6
@@ -73,10 +75,10 @@ def test_optimize_exchange_matrix_no_new_lambdas(
     """
     mock_context.somd2_config.output_directory = tmp_path
     np.savetxt(tmp_path / "repex_matrix.txt", repex_matrix_high_prob)
-    optimizer = OptimizeExchangeProbabilities()
+    optimizer = OptimizeLambdaProbabilities(optimization_target="repex_matrix")
 
     # Should not insert any new lambdas
-    result = optimizer._optimize_exchange_matrix(mock_context)
+    result = optimizer._optimize_matrix(mock_context)
 
     assert len(result) == 4
 

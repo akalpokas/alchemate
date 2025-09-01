@@ -1,7 +1,7 @@
 from somd2.config import Config
 from alchemate.manager import WorkflowManager
 from alchemate.context import SimulationContext
-from alchemate.steps.preprocessing import OptimizeExchangeProbabilities
+from alchemate.steps.preprocessing import OptimizeLambdaProbabilities
 from alchemate.logger import setup_logging
 
 somd2_config = Config()
@@ -16,7 +16,11 @@ context = SimulationContext(system="merged_molecule.s3", somd2_config=somd2_conf
 setup_logging(log_path=f"{context.somd2_config.output_directory}/alchemate.log")
 
 simulation_workflow = [
-    OptimizeExchangeProbabilities(optimization_runtime="500ps"),
+    OptimizeLambdaProbabilities(
+        optimization_runtime="100ps",
+        optimization_target="overlap_matrix",
+        optimization_threshold=0.05,
+    ),
 ]
 
 manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)

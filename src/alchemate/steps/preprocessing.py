@@ -23,6 +23,7 @@ from copy import deepcopy
 import logging
 import numpy as np
 import sire as sr
+import BioSimSpace.FreeEnergy as BSS
 
 from .base import WorkflowStep
 from ..context import SimulationContext
@@ -31,27 +32,28 @@ from ._run_somd2 import _run_somd2_workflow
 _logger = logging.getLogger("alchemate.logger")
 
 
-class OptimizeExchangeProbabilities(WorkflowStep):
+class OptimizeLambdaProbabilities(WorkflowStep):
     """
-    Workflow step to optimize replica exchange probabilities by adjusting the lambda schedule.
+    Workflow step to optimize probabilities by adjusting the lambda schedule.
 
     This step runs a short simulation (in vacuum by default) to evaluate the exchange probabilities
-    between neighboring replicas. If any pair of replicas exhibits a low exchange probability
+    between neighboring replicas. If any pair of replicas exhibits a low probability
     (below the specified threshold), new lambda values are inserted between those replicas to improve
     exchange rates. The optimization is performed iteratively for a specified number of attempts.
 
     Attributes
     ----------
+    optimization_target(str): Whether to optimize the 'overlap_matrix' or 'repex_matrix'.
     optimization_attempts (int): Number of optimization iterations to perform.
-    optimization_threshold (float): Minimum acceptable exchange probability between replicas.
+    optimization_threshold (float): Minimum acceptable probability between replicas.
     optimization_runtime (str): Duration of each optimization simulation.
     vacuum_optimization (bool): Whether to perform optimization in vacuum.
 
     Methods
     -------
     _optimize_exchange_matrix(context):
-        Reads the exchange matrix and lambda schedule, identifies pairs with low exchange
-        probabilities, and inserts new lambda values to improve exchange rates.
+        Reads the matrix and lambda schedule, identifies pairs with low
+        probabilities, and inserts new lambda values to improve overlap/exchange rates.
 
     _execute(context):
         Runs the optimization workflow, updating the lambda schedule as needed and restoring
@@ -60,24 +62,42 @@ class OptimizeExchangeProbabilities(WorkflowStep):
 
     def __init__(
         self,
+        optimization_target="overlap_matrix",
         optimization_attempts: int = 3,
-        optimization_threshold: float = 0.15,
-        optimization_runtime: str = "500ps",
+        optimization_threshold: float = 0.10,
+        optimization_runtime: str = "100ps",
         vacuum_optimization: bool = True,
     ) -> None:
         super().__init__()
+        self.optimization_target: str = optimization_target
         self.optimization_attempts: int = optimization_attempts
         self.optimization_threshold: float = optimization_threshold
         self.optimization_runtime: str = optimization_runtime
         self.vacuum_optimization = vacuum_optimization
 
-    def _optimize_exchange_matrix(self, context: SimulationContext):
-        """Internal function to optimize the exchange matrix."""
-        try:
-            repex_matrix = context.somd2_config.output_directory / "repex_matrix.txt"
-            repex_matrix = np.loadtxt(repex_matrix)
-        except Exception as e:
-            _logger.error(f"Error reading repex_matrix: {e}")
+    def _optimize_matrix(self, context: SimulationContext):
+        """Internal function to optimize matrix."""
+        if self.optimization_target == "repex_matrix":
+            try:
+                repex_matrix = (
+                    context.somd2_config.output_directory / "repex_matrix.txt"
+                )
+                repex_matrix = np.loadtxt(repex_matrix)
+                matrix = repex_matrix
+            except Exception as e:
+                _logger.error(f"Error reading repex_matrix: {e}")
+        elif self.optimization_target == "overlap_matrix":
+            try:
+                _, overlap_matrix = BSS.Relative.analyse(
+                    str(context.somd2_config.output_directory)
+                )
+                overlap_matrix = overlap_matrix.tolist()
+                matrix = overlap_matrix
+            except Exception as e:
+                _logger.error(f"Error reading overlap_matrix: {e}")
+        else:
+            _logger.error(f"Unknown optimization target: {self.optimization_target}")
+            raise NotImplementedError
 
         if context.somd2_config.lambda_values is None:
             lambda_values = np.linspace(0, 1, context.somd2_config.num_lambda).tolist()
@@ -85,11 +105,11 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             lambda_values = context.somd2_config.lambda_values
 
         require_optimization = []
-        for i, row in enumerate(repex_matrix):
-            if i < len(repex_matrix) - 1:
+        for i, row in enumerate(matrix):
+            if i < len(matrix) - 1:
                 exchange_prob = round(row[i + 1], ndigits=2)
                 _logger.info(
-                    f"Exchange probability between replica {i} and {i+1}: {exchange_prob}"
+                    f"Exchange probability between window {i} and {i+1}: {exchange_prob}"
                 )
                 if exchange_prob < self.optimization_threshold:
                     require_optimization.append((i, i + 1))
@@ -97,9 +117,9 @@ class OptimizeExchangeProbabilities(WorkflowStep):
                         f"Low exchange probability detected ({exchange_prob})"
                     )
 
-        _logger.info("Replicas requiring optimization:")
-        for replica_pair in require_optimization:
-            _logger.info(f" - Replica {replica_pair[0]} and {replica_pair[1]}")
+        _logger.info("Windows requiring optimization:")
+        for window_pair in require_optimization:
+            _logger.info(f" - Window {window_pair[0]} and {window_pair[1]}")
 
         # Insert a new lambda between lambda values that require optimization
         new_lambdas = []
@@ -138,7 +158,7 @@ class OptimizeExchangeProbabilities(WorkflowStep):
             else:
                 old_lambda_values = context.somd2_config.lambda_values
 
-            optimized_lambda_values = self._optimize_exchange_matrix(context=context)
+            optimized_lambda_values = self._optimize_matrix(context=context)
 
             # Success condition test
             if old_lambda_values == optimized_lambda_values:
