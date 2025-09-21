@@ -64,5 +64,14 @@ class WorkflowStep(ABC):
 class RunBasicCalculation(WorkflowStep):
     """A step to run a basic SOMD2 calculation."""
 
+    def __init__(
+        self,
+        calculation_runtime: str = "5000ps",
+    ) -> None:
+        super().__init__()
+
+        self.calculation_runtime: str = calculation_runtime
+
     def _execute(self, context: SimulationContext):
+        context.somd2_config.runtime = self.calculation_runtime
         _run_somd2_workflow(context=context)
