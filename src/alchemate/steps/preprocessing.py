@@ -36,10 +36,10 @@ class OptimizeLambdaProbabilities(WorkflowStep):
     """
     Workflow step to optimize probabilities by adjusting the lambda schedule.
 
-    This step runs a short simulation (in vacuum by default) to evaluate the exchange probabilities
+    This step runs a short simulation (in vacuum by default) to evaluate the overlap/exchange probabilities
     between neighboring replicas. If any pair of replicas exhibits a low probability
     (below the specified threshold), new lambda values are inserted between those replicas to improve
-    exchange rates. The optimization is performed iteratively for a specified number of attempts.
+    overlap/exchange rates. The optimization is performed iteratively for a specified number of attempts.
 
     Attributes
     ----------
@@ -51,7 +51,7 @@ class OptimizeLambdaProbabilities(WorkflowStep):
 
     Methods
     -------
-    _optimize_exchange_matrix(context):
+    _optimize_matrix(context):
         Reads the matrix and lambda schedule, identifies pairs with low
         probabilities, and inserts new lambda values to improve overlap/exchange rates.
 
@@ -109,12 +109,12 @@ class OptimizeLambdaProbabilities(WorkflowStep):
             if i < len(matrix) - 1:
                 exchange_prob = round(row[i + 1], ndigits=2)
                 _logger.info(
-                    f"Exchange probability between window {i} and {i+1}: {exchange_prob}"
+                    f"Overlap/Exchange probability between window {i} and {i+1}: {exchange_prob}"
                 )
                 if exchange_prob < self.optimization_threshold:
                     require_optimization.append((i, i + 1))
                     _logger.warning(
-                        f"Low exchange probability detected ({exchange_prob})"
+                        f"Low overlap/exchange probability detected ({exchange_prob})"
                     )
 
         _logger.info("Windows requiring optimization:")
