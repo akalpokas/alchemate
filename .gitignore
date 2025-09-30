@@ -209,3 +209,8 @@ __marimo__/
 output/
 .vscode
 log.txt
+*.bz2
+*.s3
+*.dcd
+*.xml
+*.parquet

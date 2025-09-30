@@ -80,13 +80,13 @@ class OptimizeConvergence(WorkflowStep):
         self,
         optimization_attempts: int = 3,
         optimization_heuristics: dict = None,
-        optimization_runtime: str = "500ps",
+        optimization_runtime: str = "1000ps",
         plot_convergence: bool = True,
     ) -> None:
         super().__init__()
 
         if optimization_heuristics is None:
-            optimization_heuristics = {"estimator_error": 0.1, "dg_slope": 0.25}
+            optimization_heuristics = {"estimator_error": 0.05, "dg_slope": 0.25}
         self.optimization_attempts: int = optimization_attempts
         self.optimization_heuristics: dict = optimization_heuristics
         self.optimization_runtime: str = optimization_runtime
@@ -181,9 +181,14 @@ class OptimizeConvergence(WorkflowStep):
         convergence_df = convergence.forward_backward_convergence(
             extracted_dfs, estimator="MBAR"
         )
-        convergence_decorrelated_df = convergence.forward_backward_convergence(
-            extracted_decorrelated_dfs, estimator="MBAR"
-        )
+        try:
+            convergence_decorrelated_df = convergence.forward_backward_convergence(
+                extracted_decorrelated_dfs, estimator="MBAR"
+            )
+        except ValueError as e:
+            _logger.error(f"Error in decorrelated convergence calculation: {e}")
+            _logger.error("Falling back to using original convergence data.")
+            convergence_decorrelated_df = convergence_df.copy()
 
         # Need to retain data_fraction as the as to_kcalmol function will also convert it
         data_fraction = convergence_df["data_fraction"].copy()
