@@ -11,6 +11,7 @@ class TestRunSomd2Workflow:
         context = Mock(spec=SimulationContext)
         context.somd2_config = Mock()
         context.system = Mock()
+        context.somd2_config.restart = False
         return context
 
     @patch("alchemate.steps._run_somd2.multiprocessing.Process")
@@ -38,7 +39,7 @@ class TestRunSomd2Workflow:
 
     @patch("alchemate.steps._run_somd2.multiprocessing.Process")
     @patch("alchemate.steps._run_somd2.multiprocessing.Queue")
-    def test_hard_restart_after_error(
+    def test_restart_after_error(
         self, mock_queue_class, mock_process_class, mock_context
     ):
         # Setup
@@ -54,36 +55,11 @@ class TestRunSomd2Workflow:
         mock_process_class.return_value = mock_process
 
         # Execute
-        _run_somd2_workflow(mock_context, max_hard_restarts=2, max_soft_restarts=1)
+        _run_somd2_workflow(mock_context, max_restarts=1)
 
         # Assert
         assert mock_process.start.call_count == 2
         assert mock_process.join.call_count == 2
-
-    @patch("alchemate.steps._run_somd2.multiprocessing.Process")
-    @patch("alchemate.steps._run_somd2.multiprocessing.Queue")
-    def test_soft_restart_success(
-        self, mock_queue_class, mock_process_class, mock_context
-    ):
-        # Setup
-        mock_queue = Mock()
-        mock_queue.get.side_effect = [
-            {"error": "Test error"},  # Hard attempt fails
-            {"success": True},  # Soft restart succeeds
-        ]
-        mock_queue_class.return_value = mock_queue
-
-        mock_process = Mock()
-        mock_process.pid = 12345
-        mock_process_class.return_value = mock_process
-
-        # Execute
-        _run_somd2_workflow(mock_context, max_hard_restarts=1, max_soft_restarts=2)
-
-        # Assert
-        assert mock_process.start.call_count == 2
-        # Verify restart flag is set for soft restart
-        assert mock_context.somd2_config.restart is True
 
     @patch("alchemate.steps._run_somd2.multiprocessing.Process")
     @patch("alchemate.steps._run_somd2.multiprocessing.Queue")
@@ -103,7 +79,7 @@ class TestRunSomd2Workflow:
         with pytest.raises(
             RuntimeError, match="SOMD2 workflow failed after multiple attempts"
         ):
-            _run_somd2_workflow(mock_context, max_hard_restarts=1, max_soft_restarts=1)
+            _run_somd2_workflow(mock_context, max_restarts=1)
 
     @patch("alchemate.steps._run_somd2.multiprocessing.Process")
     @patch("alchemate.steps._run_somd2.multiprocessing.Queue")
@@ -124,7 +100,7 @@ class TestRunSomd2Workflow:
         mock_process_class.return_value = mock_process
 
         # Execute
-        _run_somd2_workflow(mock_context, max_hard_restarts=1, max_soft_restarts=3)
+        _run_somd2_workflow(mock_context, max_restarts=3)
 
         # Assert
         assert mock_process.start.call_count == 3
@@ -144,7 +120,7 @@ class TestRunSomd2Workflow:
 
         # Execute & Assert
         with pytest.raises(RuntimeError):
-            _run_somd2_workflow(mock_context, max_hard_restarts=2, max_soft_restarts=3)
+            _run_somd2_workflow(mock_context, max_restarts=3)
 
-        # Should have 2 hard attempts, each with 3 soft attempts = 2 + (2 * 3) = 8 total
-        assert mock_process.start.call_count == 8
+        # Should have 3 attempts in total
+        assert mock_process.start.call_count == 4

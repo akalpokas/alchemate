@@ -35,6 +35,9 @@ def test_pickle_saving_and_loading(tmp_path, mock_context):
     )
 
 
+@pytest.mark.xfail(
+    reason="This is currently broken in SOMD2, due to: TypeError: Config.__init__() got an unexpected keyword argument 'perturbed_system_file' "
+)
 def test_rebuilding_from_previous_somd2_output(tmp_path):
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a SOMD2 output directory to mimick a previously ran simulation

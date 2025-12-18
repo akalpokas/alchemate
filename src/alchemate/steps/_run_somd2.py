@@ -29,107 +29,85 @@ from ..context import SimulationContext
 _logger = logging.getLogger("alchemate.logger")
 
 
-def _run_somd2_workflow(
-    context: SimulationContext, max_hard_restarts: int = 3, max_soft_restarts: int = 5
-):
+def _run_somd2_workflow(context: SimulationContext, max_restarts: int = 5):
     """Internal function to run a SOMD2 workflow. Handles the isolated process running and queuing of child SOMD2 processes.
 
     Args:
         context : SimulationContext
             The simulation context containing the SOMD2 configuration, system, and other
             necessary parameters for running the workflow.
-        max_hard_restarts : int, default=3
-            Maximum number of hard restart attempts. Hard restarts run the workflow from
-            scratch without attempting to resume from a previous state.
-        max_soft_restarts : int, default=5
-            Maximum number of soft restart attempts per hard restart cycle. Soft restarts
+        max_restarts : int, default=5
+            Maximum number of restart attempts. Restart attempts
             attempt to resume the workflow from its last checkpoint or saved state.
 
     Notes:
-
-        This function is designed to be resilient to SOMD2 failures by implementing both hard and soft restart strategies.
+        This function is designed to be resilient to SOMD2 failures by implementing restart strategies.
         Under the hood this happens:
-        1. We enter a hard restart loop, where we will not attempt to restart a failed workflow, we will simply
-        try to run it again from scratch.
-        2. If a workflow fails for some reason, we will enter the soft restart loop, where we will attempt to
+        1. If a workflow fails for some reason, we will enter the restart loop, where we will attempt to
         restart the workflow. This is important in case we finished a substantial part of the workflow before the failure.
-        3. If we exhaust all soft restart attempts, we will return to the hard restart loop.
-        4. If we exhaust all hard restart attempts, we will give up and return an error.
-        The function utilizes multiprocessing to run the SOMD2 workflow in an isolated process, allowing for better error handling and recovery.
+        4. If we exhaust all restart attempts, we will give up and return an error.
+        The function utilizes multiprocessing to run the SOMD2 workflow in an isolated process.
     """
 
     result_queue = multiprocessing.Queue()
 
     _logger.debug(f"Provided somd2_config: {context.somd2_config}")
 
-    # 1. Begin hard restart loop, here we will not attempt to restart a failed workflow, we will simply
-    # try to run it again from scratch
-    for hard_attempt in range(max_hard_restarts):
-        _logger.debug(f"Starting hard attempt {hard_attempt + 1}/{max_hard_restarts}")
+    # Create a process object for the SOMD2 workflow
+    process = multiprocessing.Process(
+        target=_run_somd2_process, args=(context, result_queue)
+    )
+    process.start()
 
-        context.somd2_config.restart = False
+    _logger.debug(f"Process started with PID: {process.pid}")
 
-        # TODO: Need to think how to handle overwritting for certain workflows
+    # Wait for the process to complete, without timeout
+    process.join()
 
-        # Create a process object for the SOMD2 workflow
-        process = multiprocessing.Process(
-            target=_run_somd2_process, args=(context, result_queue)
-        )
-        process.start()
+    _logger.debug(f"Process with PID {process.pid} has completed.")
+    # Add a timeout here, in case we cannot access the result
+    result = result_queue.get(timeout=10)
 
-        _logger.debug(f"Process started with PID: {process.pid}")
+    # 2. If the result contains an error, enter the soft restart loop
+    if "error" in result:
+        _logger.error(f"Error occurred while running SOMD2 workflow: {result['error']}")
+        _logger.error(traceback.format_exc())
 
-        # Wait for the process to complete, without timeout
-        process.join()
+        # Begin soft restart loop, here we will try to restart a failed workflow
+        for attempt in range(max_restarts):
+            _logger.debug(f"Starting soft attempt {attempt + 1}/{max_restarts}")
 
-        _logger.debug(f"Process with PID {process.pid} has completed.")
-        # Add a timeout here, in case we cannot access the result
-        result = result_queue.get(timeout=10)
+            context.somd2_config.restart = True
 
-        # 2. If the result contains an error, enter the soft restart loop
-        if "error" in result:
-            _logger.error(
-                f"Error occurred while running SOMD2 workflow: {result['error']}"
+            process = multiprocessing.Process(
+                target=_run_somd2_process, args=(context, result_queue)
             )
-            _logger.error(traceback.format_exc())
+            process.start()
+            _logger.debug(f"Process started with PID: {process.pid}")
+            process.join()
+            _logger.debug(f"Process with PID {process.pid} has completed.")
 
-            # Begin soft restart loop, here we will try to restart a failed workflow
-            for soft_attempt in range(max_soft_restarts):
-                _logger.debug(
-                    f"Starting soft attempt {soft_attempt + 1}/{max_soft_restarts}"
+            try:
+                result = result_queue.get(timeout=10)
+            except Exception as e:
+                _logger.error(f"SOMD2 workflow timed out: {e}")
+                continue
+
+            if "error" in result:
+                _logger.error(
+                    f"Error occurred while running SOMD2 workflow: {result['error']}"
                 )
+                _logger.error(traceback.format_exc())
 
-                context.somd2_config.restart = True
+                # 3. Continue soft restart attempts
+                continue
+            else:
+                _logger.info("SOMD2 workflow completed successfully.")
+                return
 
-                process = multiprocessing.Process(
-                    target=_run_somd2_process, args=(context, result_queue)
-                )
-                process.start()
-                _logger.debug(f"Process started with PID: {process.pid}")
-                process.join()
-                _logger.debug(f"Process with PID {process.pid} has completed.")
-
-                try:
-                    result = result_queue.get(timeout=10)
-                except Exception as e:
-                    _logger.error(f"SOMD2 workflow timed out: {e}")
-                    continue
-
-                if "error" in result:
-                    _logger.error(
-                        f"Error occurred while running SOMD2 workflow: {result['error']}"
-                    )
-                    _logger.error(traceback.format_exc())
-
-                    # 3. Continue soft restart attempts
-                    continue
-                else:
-                    _logger.info("SOMD2 workflow completed successfully.")
-                    return
-
-        elif "success" in result:
-            _logger.info("SOMD2 workflow completed successfully.")
-            return
+    elif "success" in result:
+        _logger.info("SOMD2 workflow completed successfully.")
+        return
 
     # 4. If we reach here, it means every attempt has failed
     _logger.error("All attempts to run SOMD2 workflow have failed.")
