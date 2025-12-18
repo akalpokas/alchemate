@@ -60,7 +60,7 @@ def _run_somd2_workflow(
 
     result_queue = multiprocessing.Queue()
 
-    _logger.debug(f"Provided context: {context}")
+    _logger.debug(f"Provided somd2_config: {context.somd2_config}")
 
     # 1. Begin hard restart loop, here we will not attempt to restart a failed workflow, we will simply
     # try to run it again from scratch
