@@ -66,6 +66,7 @@ jobs:
       - name: Install somd2
         run: |
           cd ${{ github.workspace }}/somd2
+          git fetch --tags
           pip install .
 #
       - name: Install alchemate
