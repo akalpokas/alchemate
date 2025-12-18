@@ -154,6 +154,7 @@ def _run_somd2_process(context: SimulationContext, result_queue: multiprocessing
         config=context.somd2_config, system=context.system
     )
     _logger.debug(f"Initialized runner with: {runner}")
+    _logger.debug(f"SOMD2 configuration: {context.somd2_config}")
     try:
         runner.run()
         result_queue.put({"success": True})
