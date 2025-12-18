@@ -21,7 +21,6 @@
 
 import importlib.metadata
 import logging
-import shutil
 from .steps.base import WorkflowStep
 import os
 
@@ -93,24 +92,27 @@ class WorkflowManager:
                     # TODO: Need to think about how to handle directories upon file restart
                     continue
 
-                # Create a directory for the current step
-                step_dir = self.context.base_directory / step.__class__.__name__
-                _logger.debug(f"Creating directory for step: {step_dir}")
-                os.makedirs(step_dir, exist_ok=False)
+                # For steps that will not be re-run, we can have to create their own directories,
+                # so that the base directory remains unchanged for future steps. This is required
+                # for steps that rely on files from previous steps, as otherwise SOMD2 will throw errors
+                # about output directories changing upon restart
 
-                # Copy the contents of the current step's directory
-                _logger.debug(
-                    f"Copying contents from {self.context.somd2_config.output_directory} to {step_dir}"
-                )
-                for item in self.context.somd2_config.output_directory.glob("*"):
-                    if item.is_file():
-                        shutil.copy(item, step_dir)
-
-                # Update the context with the new step directory
-                self.context.somd2_config.output_directory = step_dir
+                if step.is_independent():
+                    step_dir = self.context.base_directory / step.__class__.__name__
+                    _logger.debug(
+                        f"Creating separate directory for independent step: {step_dir}"
+                    )
+                    os.makedirs(step_dir, exist_ok=False)
+                    self.context.somd2_config.output_directory = step_dir
 
                 # Run the step
                 step.run(self.context)
+
+                if step.is_independent():
+                    # Reset the output directory back to the base directory
+                    self.context.somd2_config.output_directory = (
+                        self.context.base_directory
+                    )
 
                 # Pickle the context at the end of each successful step
                 self.context.save()

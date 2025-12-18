@@ -62,13 +62,14 @@ class OptimizeLambdaProbabilities(WorkflowStep):
 
     def __init__(
         self,
+        independent: bool = True,
         optimization_target="overlap_matrix",
         optimization_attempts: int = 3,
         optimization_threshold: float = 0.10,
         optimization_runtime: str = "100ps",
         vacuum_optimization: bool = True,
     ) -> None:
-        super().__init__()
+        super().__init__(independent=independent)
         self.optimization_target: str = optimization_target
         self.optimization_attempts: int = optimization_attempts
         self.optimization_threshold: float = optimization_threshold

@@ -46,6 +46,16 @@ class WorkflowStep(ABC):
     None defined in the base class.
     """
 
+    def __init__(
+        self,
+        independent: bool = False,
+    ) -> None:
+        self._independent = independent
+
+    def is_independent(self) -> bool:
+        """Indicates whether the step is independent, i.e. will run in its own sub-directory."""
+        return self._independent
+
     def run(self, context: SimulationContext):
         """Runs the workflow step."""
 
@@ -66,9 +76,10 @@ class RunBasicCalculation(WorkflowStep):
 
     def __init__(
         self,
+        independent: bool = False,
         calculation_runtime: str = "5000ps",
     ) -> None:
-        super().__init__()
+        super().__init__(independent=independent)
 
         self.calculation_runtime: str = calculation_runtime
 

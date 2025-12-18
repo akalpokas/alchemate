@@ -78,12 +78,13 @@ class OptimizeConvergence(WorkflowStep):
 
     def __init__(
         self,
+        independent: bool = False,
         optimization_attempts: int = 3,
         optimization_heuristics: dict = None,
         optimization_runtime: str = "1000ps",
         plot_convergence: bool = True,
     ) -> None:
-        super().__init__()
+        super().__init__(independent=independent)
 
         if optimization_heuristics is None:
             optimization_heuristics = {"estimator_error": 0.05, "dg_slope": 0.25}
