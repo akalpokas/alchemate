@@ -8,9 +8,11 @@
 Modular [SOMD2](https://github.com/OpenBioSim/somd2) processing workflows.
 
 ## Purpose
+
 Alchemate implements and abstracts high-level functionality to SOMD2 FEP engine, such as iterative λ-schedule optimization or convergence detection for example. The framework is designed to be modular and extensible which allows for arbitrary workflows to be written and plugged in easily.
 
 ## Usage
+
 Using alchemate involves creating a SOMD2 configuration object, defining a simulation workflow, and creating a manager which will run the specified workflows sequentially:
 
 ```python
@@ -41,7 +43,8 @@ simulation_workflow = [
 manager = WorkflowManager(context=context, workflow_steps=simulation_workflow)
 
 # Run everything, manager will keep track of workflow steps that are completed
-final_context = manager.execute()
+if __name_ == "__main__":
+  final_context = manager.execute()
 ```
 
 At the heart of alchemate is the `SimulationContext` class which gets passed through workflows sequentially and updated with new information. This can for example, be used to attempt and pre-optimize the λ-schedule of a transformation in vacuum, before using the updated context in the main simulation:
@@ -63,6 +66,7 @@ simulation_workflow = [
 ```
 
 In general, workflows are divided into 3 different categories based on the data that the context is supposed to hold at that point:
+
 1. **Pre-processing:**
     - Simulation data is not expected.
     - Workflows here perform actions to augment the base workflow.
@@ -75,10 +79,13 @@ In general, workflows are divided into 3 different categories based on the data 
 
 Head to [examples](examples/) for more detailed scripts.
 ___
+
 ## Installation
 
 ### General use
+
 To install alchemate, please install [SOMD2](https://github.com/OpenBioSim/somd2) into your conda environment first. Then you can install alchemate into your environment by cloning this repository, and running:
+
 ```bash
 pip install -e .
 ```
@@ -86,16 +93,19 @@ pip install -e .
 ### Developing and contributing
 
 Developer dependencies can be installed with:
+
 ```bash
 pip install -e '.[dev]'
 ```
 
 and activating commit hooks:
+
 ```bash
 pre-commit install
 ```
 
 Testing is done using:
+
 ```bash
 python -m pytest -svvv --color=yes tests
 ```

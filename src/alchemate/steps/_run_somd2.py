@@ -49,14 +49,14 @@ def _run_somd2_workflow(context: SimulationContext, max_restarts: int = 5):
         The function utilizes multiprocessing to run the SOMD2 workflow in an isolated process.
     """
 
-    result_queue = multiprocessing.Queue()
+    ctx = multiprocessing.get_context("spawn")
+
+    result_queue = ctx.Queue()
 
     _logger.debug(f"Provided somd2_config: {context.somd2_config}")
 
     # Create a process object for the SOMD2 workflow
-    process = multiprocessing.Process(
-        target=_run_somd2_process, args=(context, result_queue)
-    )
+    process = ctx.Process(target=_run_somd2_process, args=(context, result_queue))
     process.start()
 
     _logger.debug(f"Process started with PID: {process.pid}")
@@ -79,7 +79,7 @@ def _run_somd2_workflow(context: SimulationContext, max_restarts: int = 5):
 
             context.somd2_config.restart = True
 
-            process = multiprocessing.Process(
+            process = ctx.Process(
                 target=_run_somd2_process, args=(context, result_queue)
             )
             process.start()
