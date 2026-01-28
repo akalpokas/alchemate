@@ -77,7 +77,9 @@ class SimulationContext:
         self.system = system
         self.somd2_config = somd2_config
         self.base_directory = somd2_config.output_directory
-        self.results = SimpleNamespace()  # to allow dynamic attribute assignment, i.e. self.results.new_attribute = value
+        self.results = (
+            SimpleNamespace()
+        )  # to allow dynamic attribute assignment, i.e. self.results.new_attribute = value
         self.completed_steps = set()  # to track completed workflow steps
 
         # Lock the instance to prevent further modifications outside mutable properties
